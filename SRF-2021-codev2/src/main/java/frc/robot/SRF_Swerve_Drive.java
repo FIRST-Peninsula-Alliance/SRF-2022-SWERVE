@@ -15,13 +15,17 @@ class SRF_Swerve_Drive {
     private double AutoMotorTemp = 0.0;
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
     private double AutoRemovable;
+    private double AutoMotorChange;
 
     private static boolean AutoDriveCompletion=false;
 
     //private boolean AutoRemovableCompletion;
 
-    private static boolean SwerveDriveCalculation=false;
+    private static boolean AutoDriveCalculationSwitch=false;
 
+    private double[] AutoXList = new double[100];
+    private double[] AutoYList = new double[100];
+    private double[] AutoMotorRotationsList = new double[100];
     
    
 
@@ -198,35 +202,37 @@ class SRF_Swerve_Drive {
     }
 
     public static boolean getSwerveDriveCalculation(){
-        return SwerveDriveCalculation;
+        return AutoDriveCalculationSwitch;
 
     }
 
     public static void setSwerveDriveCalculation(boolean cond){
-        SwerveDriveCalculation=cond;
+        AutoDriveCalculationSwitch=cond;
 
     }
 
     public static void setSwerveDriveCompletion(boolean cond){
         AutoDriveCompletion=cond;
     }
-    //AA=AutoAngle,AS=AutoSpeed,AD=AutoDistance
-    public void AutoDriveSwerve(double AA,double AS,double AD){
+
+    //AA=AutoAngle,AS=AutoSpeed,AD=AutoDistance;
+    public void AutoDriveCalculation(double AA,double AS,double AD,int i){
         
         AutoAngle=AA;
         AutoSpeed=AS;
         AutoDistance=AD;
         WheelRadius=2;
         RevolutionsperWheelSpin=128;
-        //AutoAngle
+        
+        
+        //Changes degrees to radians
         AutoAngle*=(Math.PI/180);
-        
-        
+        //This sets the two cordinates to points between -1 and 1
         AutoX=Math.cos(AutoAngle);
         AutoY=Math.sin(AutoAngle);
         //AutoSpeed
+        //Normalization of cordinates
         //Takes the two points and multiplies them by the speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
-        
         if(AutoX==1){
             //max speed
         }else if(AutoY==1){
@@ -241,6 +247,7 @@ class SRF_Swerve_Drive {
             AutoY=AutoY*AutoSpeedMaxer;
             AutoX=AutoX*AutoSpeedMaxer;
         }
+        //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
         
@@ -250,30 +257,36 @@ class SRF_Swerve_Drive {
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
         AutoMotorRotations=Math.round(AutoMotorRotations);
-        //sets motor rotations back to 0 allowing this method to be used more than once.
-        
-        
-            AutoRemovable=frontLeftModule.getMotorPosition();
-            SRF_Swerve_Drive.setSwerveDriveCalculation(true);
-            
-        
+        AutoMotorRotations=AutoMotorRotations+frontLeftModule.getMotorPosition();
+        AutoXList[i]=AutoX;
+        AutoYList[i]=AutoY;
+        AutoMotorRotationsList[i]=AutoMotorRotations;
         
     }
 
-    public void AutoDrive()
-    {
-        
-        if(AutoMotorTemp<AutoMotorRotations){
-            SRF_Swerve_Drive.setSwerveDriveCompletion(false);
-            AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoRemovable;
-            set(AutoX,AutoY,0);
-            
-        }else{
-            set(0,0,0);
-            SRF_Swerve_Drive.setSwerveDriveCompletion(true);
-        }  
-        
+    public void AutoDrive(int i){
+        if(AutoMotorTemp<AutoMotorRotationsList[i]){
+            set(AutoXList[i],AutoYList[i],0);
+        AutoMotorTemp=frontLeftModule.getMotorPosition();
+        }
+
     }
+
+    
+    // public void AutoDrive()
+    // {
+        
+    //     if(AutoMotorTemp<AutoMotorRotations){
+    //         SRF_Swerve_Drive.setSwerveDriveCompletion(false);
+    //         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoRemovable;
+    //         set(AutoX,AutoY,0);
+            
+    //     }else{
+    //         set(0,0,0);
+    //         SRF_Swerve_Drive.setSwerveDriveCompletion(true);
+    //     }  
+        
+    // }
     //FP=first point,SP=second point,TP=Third Point,AS=autospeed
     //public void SwerveAutoSemiCirle(Double FP,SP,Radius,AS){
         //AutoSpeed=AS
@@ -282,4 +295,6 @@ class SRF_Swerve_Drive {
 
 
     //}
+
+    
 }

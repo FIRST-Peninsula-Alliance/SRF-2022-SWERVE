@@ -96,6 +96,12 @@ public class Robot extends TimedRobot {
   final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
   final double carokP = 3.75, carokI = 0, carokD = 0;
   final double caroPoskP = 1.75, caroPoskI = 0.001, caroPoskD = 0;
+
+  private double[] AutoAngleList = new double[100];
+  private double[] AutoSpeedList = new double[100];
+  private double[] AutoDistanceList = new double[100];
+
+  private double[][][] AutoEnterList = new double[100][100][100];
    
   //Joystick values for swerve drive
   double x, y, w;
@@ -214,12 +220,26 @@ public class Robot extends TimedRobot {
      match.start();
     
      zeroYaw = navx.getAngle() % 360;
-     if(zeroYaw < 0)
+     if(zeroYaw < 0){
        zeroYaw += 360;
+     }
+     
+     
+     
+
+
+     for(int i=0;i<12;i++){
+      driveBase.AutoDriveCalculation(90.0,0.05,1.0,i);
+
+     }
    }
+   
+   
 
    @Override
    public void autonomousPeriodic() {
+
+    driveBase.AutoDrive(0);
       
       // //switch (AutoSwerveCounter) {
       //   case 0:
@@ -257,11 +277,11 @@ public class Robot extends TimedRobot {
       //   driveBase.AutoDrive();
       //     break;
       
-    if(TestCounter==0){
-      driveBase.AutoDriveSwerve(90,0.05,1);
-      TestCounter++;
-    }
-    driveBase.AutoDrive();
+    // if(TestCounter==0){
+    //   driveBase.AutoDriveSwerve(90,0.05,1);
+    //   TestCounter++;
+    // }
+    // driveBase.AutoDrive();
     
     
     
