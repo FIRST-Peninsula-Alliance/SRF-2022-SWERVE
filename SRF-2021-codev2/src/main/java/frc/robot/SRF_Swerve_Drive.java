@@ -221,6 +221,7 @@ class SRF_Swerve_Drive {
         AutoSpeed=AS;
         AutoDistance=AD;
         WheelRadius=2;
+        //change to 1024? 1024 was the original but has been updated to 128 for testing purposes. 
         RevolutionsperWheelSpin=128;
         
         
@@ -249,10 +250,10 @@ class SRF_Swerve_Drive {
         //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
-        int x=0;
-        while(x<AutoMotorRotationsList.length){
-            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[x];
+        for(int j=0;j<AutoMotorRotationsList.length;j++){
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
         }
+        
         //AutoDistance
         //this is calculating the amount of times the motor needs to rotate,
         //it takes the distance and divides it by the wheels circumfrence and then multiplies it by the amount of rpms for one wheel rotation
@@ -268,15 +269,18 @@ class SRF_Swerve_Drive {
     }
 
     public void AutoDrive(int i){
+        int holder = i;
         AutoMotorTemp=frontLeftModule.getMotorPosition();
-        if(AutoMotorTemp<AutoMotorRotationsList[i]){
-            if(AutoMotorTemp>AutoMotorRotationsList[i-1]){
-            set(AutoXList[i],AutoYList[i],0);
+        if(AutoMotorTemp<AutoMotorRotationsList[holder]){
+            if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
+            set(AutoXList[holder],AutoYList[holder],0);
             }
         }else{
-            i++;
+            holder++;
         }
-
+        if (holder=99){
+            set(0.0,0.0,0.0);
+        }
     }
 
     
