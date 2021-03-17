@@ -222,28 +222,30 @@ public class Robot extends TimedRobot {
      }
      
      
-     
+      driveBase.AutoDriveCalculation(120, 0.05, 20, 1);
+      driveBase.AutoDriveCalculation(0, 0, 0, 2);
 
 
      //slalom
-      driveBase.AutoDriveCalculation(135.0,0.50,84.852814,1);
-      driveBase.AutoDriveCalculation(90.0,0.75,157.0,2);
-      driveBase.AutoDriveCalculation(33.18481568, 0.50, 41.672083,3);
-      driveBase.AutoDriveCalculation(90, 0.50, 37, 4);
-      driveBase.AutoDriveCalculation(180, 0.5, 34.75, 5);
-      driveBase.AutoDriveCalculation(270, 0.5, 37, 6);
-      driveBase.AutoDriveCalculation(326.8151843, 0.5, 41.672083, 7);
-      driveBase.AutoDriveCalculation(270, 0.75, 157, 8);
-      driveBase.AutoDriveCalculation(228.3527175, 0.5, 89.938868, 9);   
-      driveBase.AutoDriveCalculation(0.0,0.0,0.0,10);
+      // driveBase.AutoDriveCalculation(135.0,0.50,84.852814,1);
+      // driveBase.AutoDriveCalculation(90.0,0.75,157.0,2);
+      // driveBase.AutoDriveCalculation(33.18481568, 0.50, 41.672083,3);
+      // driveBase.AutoDriveCalculation(90, 0.50, 37, 4);
+      // driveBase.AutoDriveCalculation(180, 0.5, 34.75, 5);
+      // driveBase.AutoDriveCalculation(270, 0.5, 37, 6);
+      // driveBase.AutoDriveCalculation(326.8151843, 0.5, 41.672083, 7);
+      // driveBase.AutoDriveCalculation(270, 0.75, 157, 8);
+      // driveBase.AutoDriveCalculation(228.3527175, 0.5, 89.938868, 9);   
+      // driveBase.AutoDriveCalculation(0.0,0.0,0.0,10);
     }
    
    
 
    @Override
    public void autonomousPeriodic() {
-    AutoTicker++;
-    driveBase.AutoDrive(AutoTicker);
+    
+    driveBase.AutoDrive(1);
+    driveBase.AutoDrive(2);
     
 
     
