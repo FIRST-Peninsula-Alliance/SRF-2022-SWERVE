@@ -52,6 +52,9 @@ public class Robot extends TimedRobot {
   //Button numbers for controls
   final int A = 2, B = 3, X = 1, Y = 4, leftBumper = 5, rightBumper = 6, leftTrigger = 7, rightTrigger = 8, back = 9, start = 10;
 
+
+  //AutoTicker that goes through each path
+  int AutoTicker=0;
   //DriveBase Objects
   TalonSRX frontLeftRot, frontRightRot, rearLeftRot, rearRightRot;
   CANSparkMax frontLeft, frontRight, rearLeft, rearRight;
@@ -231,16 +234,16 @@ public class Robot extends TimedRobot {
       driveBase.AutoDriveCalculation(270, 0.5, 37, 6);
       driveBase.AutoDriveCalculation(326.8151843, 0.5, 41.672083, 7);
       driveBase.AutoDriveCalculation(270, 0.75, 157, 8);
-      driveBase.AutoDriveCalculation(228.3527175, 0.5, 89.938868, 9);;
-   }
+      driveBase.AutoDriveCalculation(228.3527175, 0.5, 89.938868, 9);   
+      driveBase.AutoDriveCalculation(0.0,0.0,0.0,10);
+    }
    
    
 
    @Override
    public void autonomousPeriodic() {
-    
-    
-    driveBase.AutoDrive(1);
+    AutoTicker++;
+    driveBase.AutoDrive(AutoTicker);
     
 
     

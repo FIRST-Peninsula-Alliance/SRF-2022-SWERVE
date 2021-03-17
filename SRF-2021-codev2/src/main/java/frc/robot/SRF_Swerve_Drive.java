@@ -275,10 +275,8 @@ class SRF_Swerve_Drive {
             if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
             set(AutoXList[holder],AutoYList[holder],0);
             }
-        }else{
-            holder++;
         }
-        if (holder=99){
+        if (holder==99){
             set(0.0,0.0,0.0);
         }
     }
