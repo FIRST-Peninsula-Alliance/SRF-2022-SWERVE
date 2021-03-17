@@ -14,8 +14,7 @@ class SRF_Swerve_Drive {
     private double AutoAngle, AutoSpeed, AutoDistance;
     private double AutoMotorTemp = 0.0;
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
-    private double AutoRemovable;
-    private double AutoMotorChange;
+    private double AutoMotorRotationsTotal=0;
 
     private static boolean AutoDriveCompletion=false;
 
@@ -232,7 +231,7 @@ class SRF_Swerve_Drive {
         AutoY=Math.sin(AutoAngle);
         //AutoSpeed
         //Normalization of cordinates
-        //Takes the two points and multiplies them by the speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
+        //Takes the two points and multiplies them by t1.5708he speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
         if(AutoX==1){
             //max speed
         }else if(AutoY==1){
@@ -250,24 +249,32 @@ class SRF_Swerve_Drive {
         //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
-        
+        int x=0;
+        while(x<AutoMotorRotationsList.length){
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[x];
+        }
         //AutoDistance
         //this is calculating the amount of times the motor needs to rotate,
         //it takes the distance and divides it by the wheels circumfrence and then multiplies it by the amount of rpms for one wheel rotation
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
-        AutoMotorRotations=Math.round(AutoMotorRotations);
-        AutoMotorRotations=AutoMotorRotations+frontLeftModule.getMotorPosition();
+        AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
         AutoXList[i]=AutoX;
         AutoYList[i]=AutoY;
         AutoMotorRotationsList[i]=AutoMotorRotations;
+
+        
         
     }
 
     public void AutoDrive(int i){
-        if(AutoMotorTemp<AutoMotorRotationsList[i]){
-            set(AutoXList[i],AutoYList[i],0);
         AutoMotorTemp=frontLeftModule.getMotorPosition();
+        if(AutoMotorTemp<AutoMotorRotationsList[i]){
+            if(AutoMotorTemp>AutoMotorRotationsList[i-1]){
+            set(AutoXList[i],AutoYList[i],0);
+            }
+        }else{
+            i++;
         }
 
     }

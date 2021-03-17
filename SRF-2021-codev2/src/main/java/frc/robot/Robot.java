@@ -97,12 +97,6 @@ public class Robot extends TimedRobot {
   final double carokP = 3.75, carokI = 0, carokD = 0;
   final double caroPoskP = 1.75, caroPoskI = 0.001, caroPoskD = 0;
 
-  private double[] AutoAngleList = new double[100];
-  private double[] AutoSpeedList = new double[100];
-  private double[] AutoDistanceList = new double[100];
-
-  private double[][][] AutoEnterList = new double[100][100][100];
-   
   //Joystick values for swerve drive
   double x, y, w;
 
@@ -228,74 +222,26 @@ public class Robot extends TimedRobot {
      
 
 
-     for(int i=0;i<12;i++){
-      driveBase.AutoDriveCalculation(90.0,0.05,1.0,i);
 
-     }
+      driveBase.AutoDriveCalculation(90.0,0.05,1.0,1);
+
+     
    }
    
    
 
    @Override
    public void autonomousPeriodic() {
+    
+    
+    driveBase.AutoDrive(1);
+    
 
-    driveBase.AutoDrive(0);
-      
-      // //switch (AutoSwerveCounter) {
-      //   case 0:
-      //   if(driveBase.getAutoDriveCompletion()==false){
-      //     if(driveBase.getSwerveDriveCalculation()==false){
-            
-      //       driveBase.AutoDriveSwerve(90,.05,0.1);
-      //     }
-      //   driveBase.AutoDrive();
-      //   }else{
-      //   AutoSwerveCounter++;
-      //   }
-      //   if(AutoSwerveCounter==1){
-      //     driveBase.setSwerveDriveCalculationFalse();
-      //     driveBase.setSwerveDriveCompletionFalse();
-      //   }
-      //     break;
-      //   case 1:
-      //   if(driveBase.getAutoDriveCompletion()==false){
-      //     if(driveBase.getSwerveDriveCalculation()==false){
-      //       driveBase.AutoDriveSwerve(270,0.05,0.1);
-      //     }
-      //   driveBase.AutoDrive();
-      //   }else{
-      //   AutoSwerveCounter++;
-      //   }
-      //   if(AutoSwerveCounter==2){
-      //     driveBase.setSwerveDriveCalculationFalse();
-      //     driveBase.setSwerveDriveCompletionFalse();
-      //   }
-      //     break;  
-      
-      //   default:
-      //   driveBase.AutoDriveSwerve(0,0,0);
-      //   driveBase.AutoDrive();
-      //     break;
-      
-    // if(TestCounter==0){
-    //   driveBase.AutoDriveSwerve(90,0.05,1);
-    //   TestCounter++;
-    // }
-    // driveBase.AutoDrive();
     
-    
-    
-    
-    
-    
-      
-        
-        
-        
-      
-        
-     
-      
+
+
+
+
     // if(carousel.getSelectedSensorPosition() < carouselStartPos + 1024) {
     //   shooterPID.setReference(3050, ControlType.kVelocity);
 
