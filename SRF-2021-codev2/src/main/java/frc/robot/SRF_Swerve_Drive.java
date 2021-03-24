@@ -15,6 +15,7 @@ class SRF_Swerve_Drive {
     private double AutoMotorTemp = 0.0;
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
     private double AutoMotorRotationsTotal=0;
+    private double AutoDriveTempRemovable;
 
     private static boolean AutoDriveCompletion=false;
 
@@ -222,7 +223,7 @@ class SRF_Swerve_Drive {
         AutoDistance=AD;
         WheelRadius=2;
         //change to 1024? 1024 was the original but has been updated to 128 for testing purposes. 
-        RevolutionsperWheelSpin=128;
+        RevolutionsperWheelSpin=64;
         
         
         //Changes degrees to radians
@@ -233,17 +234,19 @@ class SRF_Swerve_Drive {
         //AutoSpeed
         //Normalization of cordinates
         //Takes the two points and multiplies them by t1.5708he speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
-        if(AutoX==1){
+        if(Math.abs(AutoX)>=0.99999){
             //max speed
-        }else if(AutoY==1){
+        }else if(Math.abs(AutoY)>=0.99999){
             //max speeD  
             //these if statments make it so one cordinate always has 1 in it, so it can achive max speed
-        }else if(AutoY>AutoX){
+        }else if(Math.abs(AutoY)>Math.abs(AutoX)){
             AutoSpeedMaxer=1/AutoY;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
             AutoY=AutoY*AutoSpeedMaxer;
             AutoX=AutoX*AutoSpeedMaxer;
         }else {
             AutoSpeedMaxer=1/AutoX;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
             AutoY=AutoY*AutoSpeedMaxer;
             AutoX=AutoX*AutoSpeedMaxer;
         }
@@ -260,27 +263,37 @@ class SRF_Swerve_Drive {
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
         AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
+        SmartDashboard.putNumber("AutoXNumber", AutoX);
+        SmartDashboard.putNumber("AutoYNumber", AutoY);
+        SmartDashboard.putNumber("AutoMotorRotations",AutoMotorRotations);
         AutoXList[i]=AutoX;
         AutoYList[i]=AutoY;
         AutoMotorRotationsList[i]=AutoMotorRotations;
 
-        
+        AutoDriveTempRemovable=frontLeftModule.getMotorPosition();
         
     }
 
     public void AutoDrive(int i){
         int holder = i;
-        AutoMotorTemp=frontLeftModule.getMotorPosition();
-        if(AutoMotorTemp<AutoMotorRotationsList[holder]){
-            if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
+        AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
+        AutoMotorTemp=Math.abs(AutoMotorTemp);
+        if(AutoMotorTemp<AutoMotorRotationsList[holder]&&AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
             set(AutoXList[holder],AutoYList[holder],0);
-            }
+
         }
-        if (holder==99){
-            set(0.0,0.0,0.0);
-        }
+        SmartDashboard.putNumber("Holder", holder);
+        SmartDashboard.putNumber("AutoMotorTemp",AutoMotorTemp);
     }
 
+    public void AutoDriveStop(int i){
+        int holder=i;
+        AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
+        AutoMotorTemp=Math.abs(AutoMotorTemp);
+        if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]-0.5){
+            set(0,0,0);
+        }
+    }
     
     // public void AutoDrive()
     // {
