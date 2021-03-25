@@ -223,8 +223,8 @@ public class Robot extends TimedRobot {
      }
      
      
-      driveBase.AutoDriveCalculation(90, 0.05, 1, 1);
-      driveBase.AutoDriveCalculation(179, 0.05, 1, 2);
+      driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
+      driveBase.AutoDriveCalculation(179.0, 0.10,36.0, 2);
       
 
 

@@ -223,7 +223,7 @@ class SRF_Swerve_Drive {
         AutoDistance=AD;
         WheelRadius=2;
         //change to 1024? 1024 was the original but has been updated to 128 for testing purposes. 
-        RevolutionsperWheelSpin=64;
+        RevolutionsperWheelSpin=6.00159435;
         
         
         //Changes degrees to radians
