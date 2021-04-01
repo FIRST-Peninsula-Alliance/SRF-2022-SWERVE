@@ -109,7 +109,7 @@ public class Robot extends TimedRobot {
   
   
 
-  double zeroYaw, gyroAngle;
+  double zeroYaw, gyroAngle, gyroStartAngle;
   
 
   boolean testRotationController = true;
@@ -221,6 +221,7 @@ public class Robot extends TimedRobot {
      if(zeroYaw < 0){
        zeroYaw += 360;
      }
+     gyroStartAngle=navx.getAngle();
      
      
       driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
