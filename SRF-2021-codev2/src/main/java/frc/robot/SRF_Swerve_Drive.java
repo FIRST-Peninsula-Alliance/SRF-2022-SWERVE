@@ -285,7 +285,7 @@ class SRF_Swerve_Drive {
         //double AutoDriveDriftFixerAngle=navx.getAngle();
         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
         AutoMotorTemp=Math.abs(AutoMotorTemp);
-        if(AutoMotorTemp<AutoMotorRotationsList[holder]&&AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
+        if(AutoMotorTemp<AutoMotorRotationsList[i]&&AutoMotorTemp>=AutoMotorRotationsList[i-1]){
             // if(AutoDriveDriftFixerAngle>gyroStartAngle){
             //     AutoDriveCalculation(AutoAngleList[holder]+AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
             //     //switch the plus or minus if drift is doubled

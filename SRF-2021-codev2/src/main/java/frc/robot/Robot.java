@@ -258,8 +258,7 @@ public class Robot extends TimedRobot {
     driveBase.AutoDrive(7);
     driveBase.AutoDrive(8);
     driveBase.AutoDrive(9);
-    driveBase.AutoDrive(10);
-    driveBase.AutoDriveStop(11);
+    driveBase.AutoDriveStop(10);
     
     
 
@@ -451,15 +450,26 @@ public class Robot extends TimedRobot {
 
     //Shooter, default value = 4200
     if(controller.getRawButton(leftBumper)) {
-      shooterSpeed = 4500.0;
+      shooterSpeed = 4600.0;
     } else {
       shooterPID.setIAccum(0);
     }
+
+
+
+
+
+
+
+
+
+    
     
     //Shoot function
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
       outtakeSpeed = -.6;
-      carouselSpeed = -40.0;
+      carouselSpeed = -32.0;
+      //original carousel speed was -40
     } 
     
     //Intake Functions
