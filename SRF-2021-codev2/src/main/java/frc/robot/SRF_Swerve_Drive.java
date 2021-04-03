@@ -282,16 +282,16 @@ class SRF_Swerve_Drive {
 
     public void AutoDrive(int i){
         int holder = i;
-        double AutoDriveDriftFixerAngle=navx.getAngle();
+        //double AutoDriveDriftFixerAngle=navx.getAngle();
         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
         AutoMotorTemp=Math.abs(AutoMotorTemp);
         if(AutoMotorTemp<AutoMotorRotationsList[holder]&&AutoMotorTemp>=AutoMotorRotationsList[holder-1]){
-            if(AutoDriveDriftFixerAngle()>gyroStartAngle){
-                AutoDriveCalculation(AutoAngleList[holder]+AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
-                //switch the plus or minus if drift is doubled
-            }else if(AutoDriveDriftFixerAngle()<gyroStartAngle){
-                AutoDriveCalculation(AutoAngleList[holder]-AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
-            }
+            // if(AutoDriveDriftFixerAngle>gyroStartAngle){
+            //     AutoDriveCalculation(AutoAngleList[holder]+AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
+            //     //switch the plus or minus if drift is doubled
+            // }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
+            //     AutoDriveCalculation(AutoAngleList[holder]-AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
+            // }
             set(AutoXList[holder],AutoYList[holder],0);
 
         }

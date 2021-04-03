@@ -15,7 +15,7 @@ import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.cscore.UsbCamera;
+//import edu.wpi.cscore.UsbCamera;
 //import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
   SRF_Swerve_Drive driveBase;
 
   //Climbing motors
-  TalonSRX winch1, winch2, hookLift;
+  //TalonSRX winch1, winch2, hookLift;
 
   //Ball Motors
   //Full rotation = 1024 Counts
@@ -77,23 +77,25 @@ public class Robot extends TimedRobot {
   CANPIDController shooterPID;
   CANEncoder shooterEncoder;
 
-  TalonSRX spinnerMotor;
+  //TalonSRX spinnerMotor;
 
   AHRS navx;
-  Block pixyBlock;
-  PixyCam pixy = new PixyCam();
+  // Block pixyBlock;
+  // PixyCam pixy = new PixyCam();
   I2C wire = new I2C(Port.kOnboard, 0x0);
 
   //ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
   //Pneumatics
-  DoubleSolenoid arm, spinner, hood;
+  DoubleSolenoid arm;
+  //DoubleSolenoid spinner;
+  DoubleSolenoid hood;
   //DoubleSolenoid arm = new DoubleSolenoid(0, 0);
   Compressor arnold;
   //Compressor arnold = new Compressor();
   boolean armDown = false; //if arm is up, armUp is true
   boolean hoodDown = false;
-  boolean spinnerDown = true;
+  //boolean spinnerDown = true;
 
   final double drivekP = 16, drivekI = 0.00013, drivekD = 0;
   final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
@@ -130,7 +132,7 @@ public class Robot extends TimedRobot {
 
   Timer match = new Timer();
 
-  UsbCamera cam;
+  //UsbCamera cam;
 
   boolean fieldOriented = true;
 
@@ -159,9 +161,9 @@ public class Robot extends TimedRobot {
     driveBase = new SRF_Swerve_Drive(FLModule, FRModule, RLModule, RRModule, 25.0, 21.0, 32.65);
 
     //climbing initialization
-    winch1 = new TalonSRX(14);
-    winch2 = new TalonSRX(15);
-    hookLift = new TalonSRX(13);
+    // winch1 = new TalonSRX(14);
+    // winch2 = new TalonSRX(15);
+    // hookLift = new TalonSRX(13);
 
     //Ball Manipulating initialization
     carousel = new TalonSRX(12);
@@ -183,14 +185,14 @@ public class Robot extends TimedRobot {
     shooterPID.setIMaxAccum(1.0, 0);
     shooterEncoder = new CANEncoder(shooter);
 
-    spinnerMotor = new TalonSRX(17);
-    spinnerMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+    //spinnerMotor = new TalonSRX(17);
+    //spinnerMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 
     arnold = new Compressor(0);
     arnold.setClosedLoopControl(true);
 
     arm = new DoubleSolenoid(9,3,4);
-    spinner = new DoubleSolenoid(9,2,5);
+    //spinner = new DoubleSolenoid(9,2,5);
     hood = new DoubleSolenoid(9,1,6);
 
     //cam = CameraServer.getInstance().startAutomaticCapture();
@@ -224,22 +226,22 @@ public class Robot extends TimedRobot {
      gyroStartAngle=navx.getAngle();
      
      
-      driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
-      driveBase.AutoDriveCalculation(179.0, 0.10,36.0, 2);
+      // driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
+      // driveBase.AutoDriveCalculation(179.0, 0.10,36.0, 2);
       
 
 
      //slalom
-      // driveBase.AutoDriveCalculation(135.0,0.15,84.852814,1);
-      // driveBase.AutoDriveCalculation(90.0,0.15,157.0,2);
-      // driveBase.AutoDriveCalculation(33.18481568, 0.15, 41.672083,3);
-      // driveBase.AutoDriveCalculation(90, 0.15, 37, 4);
-      // driveBase.AutoDriveCalculation(180, 0.15, 34.75, 5);
-      // driveBase.AutoDriveCalculation(270, 0.15, 37, 6);
-      // driveBase.AutoDriveCalculation(326.8151843, 0.15, 41.672083, 7);
-      // driveBase.AutoDriveCalculation(270, 0.15, 157, 8);
-      // driveBase.AutoDriveCalculation(228.3527175, 0.15, 89.938868, 9);   
-      // driveBase.AutoDriveCalculation(0.0,0.0,0.0,10);
+      driveBase.AutoDriveCalculation(135.0,0.15,84.852814,1);
+      driveBase.AutoDriveCalculation(90.0,0.15,157.0,2);
+      driveBase.AutoDriveCalculation(33.18481568, 0.15, 41.672083,3);
+      driveBase.AutoDriveCalculation(90, 0.15, 37, 4);
+      driveBase.AutoDriveCalculation(180, 0.15, 34.75, 5);
+      driveBase.AutoDriveCalculation(270, 0.15, 37, 6);
+      driveBase.AutoDriveCalculation(326.8151843, 0.15, 41.672083, 7);
+      driveBase.AutoDriveCalculation(270, 0.15, 157, 8);
+      driveBase.AutoDriveCalculation(228.3527175, 0.15, 89.938868, 9);   
+      
     }
    
    
@@ -249,7 +251,15 @@ public class Robot extends TimedRobot {
     
     driveBase.AutoDrive(1);
     driveBase.AutoDrive(2);
-    driveBase.AutoDriveStop(3);
+    driveBase.AutoDrive(3);
+    driveBase.AutoDrive(4);
+    driveBase.AutoDrive(5);
+    driveBase.AutoDrive(6);
+    driveBase.AutoDrive(7);
+    driveBase.AutoDrive(8);
+    driveBase.AutoDrive(9);
+    driveBase.AutoDrive(10);
+    driveBase.AutoDriveStop(11);
     
     
 
@@ -296,7 +306,7 @@ public class Robot extends TimedRobot {
     timStart = false;
     prevCarouselPos = carousel.getSelectedSensorPosition();
     arm.set(Value.kForward);
-    spinner.set(Value.kReverse);
+    //spinner.set(Value.kReverse);
     hood.set(Value.kReverse);
   }
 
@@ -378,31 +388,31 @@ public class Robot extends TimedRobot {
       letUpX = true;
     }
     //actuation code for spinner
-    if(controller.getRawButtonPressed(start) && letUpStart)
-    {
-      if(spinnerDown == true) {
-        spinner.set(Value.kForward);
-        spinnerDown = false;
-      } else {
-        spinner.set(Value.kReverse);
-        spinnerDown = true;
-        slowMode = true;
-      }
-      letUpB = false;
-    } else if(!controller.getRawButton(start)) {
-      letUpB = true;
-    }
+    // if(controller.getRawButtonPressed(start) && letUpStart)
+    // {
+    //   if(spinnerDown == true) {
+    //     spinner.set(Value.kForward);
+    //     spinnerDown = false;
+    //   } else {
+    //     spinner.set(Value.kReverse);
+    //     spinnerDown = true;
+    //     slowMode = true;
+    //   }
+    //   letUpB = false;
+    // } else if(!controller.getRawButton(start)) {
+    //   letUpB = true;
+    // }
 
-    if(spinnerDown == false) {
-      if(controller.getPOV() == 90)
-        spinnerMotor.set(ControlMode.PercentOutput, .5);
-      else if(controller.getPOV() == 270)
-        spinnerMotor.set(ControlMode.PercentOutput, -.5);
-      else
-        spinnerMotor.set(ControlMode.PercentOutput, 0);
-    } else {
-      spinnerMotor.set(ControlMode.PercentOutput, 0);
-    }
+    // if(spinnerDown == false) {
+    //   if(controller.getPOV() == 90)
+    //     spinnerMotor.set(ControlMode.PercentOutput, .5);
+    //   else if(controller.getPOV() == 270)
+    //     spinnerMotor.set(ControlMode.PercentOutput, -.5);
+    //   else
+    //     spinnerMotor.set(ControlMode.PercentOutput, 0);
+    // } else {
+    //   spinnerMotor.set(ControlMode.PercentOutput, 0);
+    // }
     
     //Hood
     if(controller.getRawButtonPressed(B) && letUpB)
@@ -420,24 +430,24 @@ public class Robot extends TimedRobot {
     }
 
     //85000 at low power(.1 or .2)
-    if(hookLift.getSelectedSensorPosition() > -865000 && controller.getRawButton(Y)) { //Y = up
-      if(hookLift.getSelectedSensorPosition() < -835000)
-        hookLift.set(ControlMode.PercentOutput, -0.2);
-      else
-        hookLift.set(ControlMode.PercentOutput, -0.6);
-    //0 at low power(.1)
-    }else if(hookLift.getSelectedSensorPosition() < -5000 && controller.getRawButton(X)) {
-      if(hookLift.getSelectedSensorPosition() > -50000)
-        hookLift.set(ControlMode.PercentOutput, 0.2);
-      else
-        hookLift.set(ControlMode.PercentOutput, 0.6);
-    } else
-      hookLift.set(ControlMode.PercentOutput, 0);
+    // if(hookLift.getSelectedSensorPosition() > -865000 && controller.getRawButton(Y)) { //Y = up
+    //   if(hookLift.getSelectedSensorPosition() < -835000)
+    //     hookLift.set(ControlMode.PercentOutput, -0.2);
+    //   else
+    //     hookLift.set(ControlMode.PercentOutput, -0.6);
+    // //0 at low power(.1)
+    // }else if(hookLift.getSelectedSensorPosition() < -5000 && controller.getRawButton(X)) {
+    //   if(hookLift.getSelectedSensorPosition() > -50000)
+    //     hookLift.set(ControlMode.PercentOutput, 0.2);
+    //   else
+    //     hookLift.set(ControlMode.PercentOutput, 0.6);
+    // } else
+    //   hookLift.set(ControlMode.PercentOutput, 0);
 
-    //slows down robot when the hook is up
-    if(hookLift.getSelectedSensorPosition() < -100000) {
-      slowMode = true;
-    }
+    // //slows down robot when the hook is up
+    // if(hookLift.getSelectedSensorPosition() < -100000) {
+    //   slowMode = true;
+    // }
 
     //Shooter, default value = 4200
     if(controller.getRawButton(leftBumper)) {
@@ -463,13 +473,13 @@ public class Robot extends TimedRobot {
     } else 
       intake.set(ControlMode.PercentOutput, 0);
 
-    if(controller.getPOV() == 0 /*&& Timer.getMatchTime() <= 30*/) {
-      winch1.set(ControlMode.PercentOutput, 1);
-      winch2.set(ControlMode.Follower, 14);
-    } else {
-      winch1.set(ControlMode.PercentOutput, 0);
-      winch2.set(ControlMode.Follower, 14);
-    }
+    // if(controller.getPOV() == 0 /*&& Timer.getMatchTime() <= 30*/) {
+    //   winch1.set(ControlMode.PercentOutput, 1);
+    //   winch2.set(ControlMode.Follower, 14);
+    // } else {
+    //   winch1.set(ControlMode.PercentOutput, 0);
+    //   winch2.set(ControlMode.Follower, 14);
+    // }
 
     if(controller.getPOV() == 180 && letUpPOV180) {
       fieldOriented = !fieldOriented;
@@ -591,13 +601,13 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
     
-    if(Math.abs(controller.getRawAxis(1)) > .05){
-      winch1.set(ControlMode.PercentOutput, controller.getRawAxis(1));
-      winch2.set(ControlMode.Follower, 14);
-    } else {
-      winch1.set(ControlMode.PercentOutput, 0);
-      winch2.set(ControlMode.Follower, 14);
-    }
+    // if(Math.abs(controller.getRawAxis(1)) > .05){
+    //   winch1.set(ControlMode.PercentOutput, controller.getRawAxis(1));
+    //   winch2.set(ControlMode.Follower, 14);
+    // } else {
+    //   winch1.set(ControlMode.PercentOutput, 0);
+    //   winch2.set(ControlMode.Follower, 14);
+    // }
     
     /*SmartDashboard.putNumber("Red",colorSensor.getRed());
     SmartDashboard.putNumber("Blue", colorSensor.getBlue());
