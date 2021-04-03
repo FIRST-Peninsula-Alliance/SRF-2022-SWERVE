@@ -106,7 +106,9 @@ public class Robot extends TimedRobot {
   double x, y, w;
 
   int AutoSwerveCounter=0;
-
+  int lemon = 1;
+  //lemon is the variable that we use to change the shooter revolution per minutes. It is currently controlled by the
+  // "x" button
   int TestCounter=0;
   
   
@@ -116,9 +118,9 @@ public class Robot extends TimedRobot {
 
   boolean testRotationController = true;
 
-  Boolean letUpB = true, letUpX = true, letUpStart = true, letUpBack = true, letUpRBump, letUpPOV180 = true;
-
-  Double carouselSpeed, outtakeSpeed, shooterSpeed;
+  Boolean letUpB = true, letUpX = true, letUpStart = true, letUpBack = true, letUpRBump, letUpX2 = true, letUpPOV180 = true;
+//let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
+  Double carouselSpeed, outtakeSpeed, shooterSpeed; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = false, unjam = false;
@@ -386,6 +388,18 @@ public class Robot extends TimedRobot {
     } else if(!controller.getRawButton(A)) {
       letUpX = true;
     }
+
+    if(controller.getRawButtonPressed(X) && letUpX2){
+      if(lemon < 4){
+        lemon++;
+      }
+      if (lemon >= 4){
+        lemon = 1;
+      }
+      letUpX2=false;
+    }else if(!controller.getRawButton(X)) {
+      letUpX2=true;
+    }
     //actuation code for spinner
     // if(controller.getRawButtonPressed(start) && letUpStart)
     // {
@@ -449,13 +463,21 @@ public class Robot extends TimedRobot {
     // }
 
     //Shooter, default value = 4200
-    if(controller.getRawButton(leftBumper)) {
+    //last three numbers are random and are a work in progress
+    if(controller.getRawButton(leftBumper) && lemon == 1) {
+      shooterSpeed = 3100.0;
+    } else if(controller.getRawButton(leftBumper) && lemon == 2) {
+      shooterSpeed = 3600.0;
+    } else if (controller.getRawButton(leftBumper) && lemon == 3){
+      shooterSpeed = 4000.0;
+    } else if (controller.getRawButton(leftBumper) && lemon == 4){
       shooterSpeed = 4600.0;
     } else {
       shooterPID.setIAccum(0);
     }
+    
 
-
+  
 
 
 
