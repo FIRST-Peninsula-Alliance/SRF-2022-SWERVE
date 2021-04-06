@@ -6,7 +6,7 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import com.kauailabs.navx.frc.AHRS;
+
 
 class SRF_Swerve_Drive {
     
@@ -17,9 +17,13 @@ class SRF_Swerve_Drive {
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
     private double AutoMotorRotationsTotal=0;
     private double AutoDriveTempRemovable;
-    Double autoDriftX;
-    Double autoDriftY;
-    Double gyroStartAngle;
+    double autoDriftX;
+    double autoDriftY;
+    double gyroStartAngle;
+    double navxAngle;
+    double AutoMotorTotal=0.0;
+    double AutoMotorDifference;
+    int checker=99;
 
     private static boolean AutoDriveCompletion=false;
 
@@ -44,7 +48,7 @@ class SRF_Swerve_Drive {
     private SRF_Swerve_Module rearLeftModule;
     private SRF_Swerve_Module rearRightModule;
 
-    AHRS navx;
+    
 
     public SRF_Swerve_Drive(SRF_Swerve_Module frontLeft, SRF_Swerve_Module frontRight, SRF_Swerve_Module rearLeft,
                             SRF_Swerve_Module rearRight, double w, double t, double r) {
@@ -173,6 +177,14 @@ class SRF_Swerve_Drive {
         return new double[] {wheelAngle[0], wheelAngle[1], wheelAngle[2], wheelAngle[3]};
     }
 
+    public double getGyroStart(double gyroStartAngle){
+        return gyroStartAngle;
+    }
+
+    public double getNavxAngle(double navxAngle){
+        return navxAngle;
+    }
+
     public double getFrontLeftSpeed(){
         return wheelSpeed[1];
     }
@@ -262,9 +274,7 @@ class SRF_Swerve_Drive {
         //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
-        for(int j=0;j<AutoMotorRotationsList.length;j++){
-            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
-        }
+       
         
         //AutoDistance
         //this is calculating the amount of times the motor needs to rotate,
@@ -272,6 +282,9 @@ class SRF_Swerve_Drive {
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
         AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
+        for(int j=0;j<AutoMotorRotationsList.length;j++){
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
+        }
         SmartDashboard.putNumber("AutoXNumber", AutoX);
         SmartDashboard.putNumber("AutoYNumber", AutoY);
         SmartDashboard.putNumber("AutoMotorRotations",AutoMotorRotations);
@@ -281,10 +294,11 @@ class SRF_Swerve_Drive {
         AutoXList[i]=AutoX;
         AutoYList[i]=AutoY;
         AutoMotorRotationsList[i]=AutoMotorRotations;
-        gyroStartAngle=navx.getAngle();
+        
         AutoDriveTempRemovable=frontLeftModule.getMotorPosition();
         
     }
+    
 
     public void DriftCalculation(double AA,double AS,double AD){
         
@@ -330,34 +344,49 @@ class SRF_Swerve_Drive {
        
 
     public void AutoDrive(int i){
+        
         int holder = i;
-        double AutoDriveDriftFixerAngle=navx.getAngle();
-        AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
-        AutoMotorTemp=Math.abs(AutoMotorTemp);
-        if(AutoMotorTemp<AutoMotorRotationsList[i]&&AutoMotorTemp>=AutoMotorRotationsList[i-1]){
+        double AutoDriveDriftFixerAngle=getNavxAngle(navxAngle);
+       
+        
+        AutoMotorDifference=AutoMotorTotal-Math.abs(frontLeftModule.getMotorPosition()-AutoDriveTempRemovable);
+        AutoMotorTotal=Math.abs(AutoMotorDifference)+AutoMotorTotal;
+        if(AutoMotorTotal<AutoMotorRotationsList[i]&&AutoMotorTotal>=AutoMotorRotationsList[i-1]){
+            
              if(AutoDriveDriftFixerAngle>gyroStartAngle){
+                 
                 DriftCalculation(AutoDriveDriftFixerAngle-gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
                 set(AutoXList[holder]-autoDriftX,AutoYList[holder]-autoDriftY,0);
+                checker=holder;
                 //switch the plus or minus if drift is doubled
             }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
                 DriftCalculation(AutoDriveDriftFixerAngle+gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
-                set(AutoXList[holder]+autoDriftX,AutoYList[holder]+autoDriftY,0);
+                set(AutoXList[i]+autoDriftX,AutoYList[i]+autoDriftY,0);
+                checker=holder;
+            }else{
+                set(AutoXList[i],AutoYList[i],0);
+                checker=holder;
             }
+            
             //set(AutoXList[holder],AutoYList[holder],0);
 
         }
+        SmartDashboard.putNumber("Checker", checker);
         SmartDashboard.putNumber("Holder", holder);
-        SmartDashboard.putNumber("AutoMotorTemp",AutoMotorTemp);
+        SmartDashboard.putNumber("AutoMotorTotal",AutoMotorTotal);
+        SmartDashboard.putNumberArray("AutoAngleList", AutoAngleList);
+        SmartDashboard.putNumberArray("AutoSpeedList", AutoSpeedList);
+        SmartDashboard.putNumberArray("AutoDistanceList", AutoDistanceList);
         
     }
 
     public void AutoDriveStop(int i){
         int holder=i;
-        AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
-        AutoMotorTemp=Math.abs(AutoMotorTemp);
-        if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]-0.5){
-            //set(0,0,0);
-            setSpeedZero();
+        AutoMotorDifference=AutoMotorTotal-Math.abs(frontLeftModule.getMotorPosition()-AutoDriveTempRemovable);
+        AutoMotorTotal=Math.abs(AutoMotorDifference)+AutoMotorTotal;
+        if(AutoMotorTotal>=AutoMotorRotationsList[holder-1]-0.5){
+            set(0,0,0);
+            
         }
     }
 

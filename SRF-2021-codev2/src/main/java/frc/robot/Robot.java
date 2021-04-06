@@ -124,7 +124,7 @@ public class Robot extends TimedRobot {
   Double carouselSpeed, outtakeSpeed, shooterSpeed, shooterSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
-  Boolean slowMode = false, unjam = false;
+  Boolean slowMode = true, unjam = false;
   int carouselStartPos;
   //0 -17 20 17
   final int offSetFL = 0, offSetFR = 0, offSetRL = 0, offSetRR = 0;
@@ -226,24 +226,25 @@ public class Robot extends TimedRobot {
      if(zeroYaw < 0){
        zeroYaw += 360;
      }
-     gyroStartAngle=navx.getAngle();
      
+     driveBase.getGyroStart(navx.getAngle());
      
-      // driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
-      // driveBase.AutoDriveCalculation(179.0, 0.10,36.0, 2);
+       driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
+     driveBase.AutoDriveCalculation(4.0, 0.10,36.0, 2);
+     driveBase.AutoDriveCalculation(270.0, 0.10, 36.0, 3);
       
 
 
      //slalom
-      driveBase.AutoDriveCalculation(135.0,0.15,84.852814,1);
-      driveBase.AutoDriveCalculation(90.0,0.15,157.0,2);
-      driveBase.AutoDriveCalculation(33.18481568, 0.15, 41.672083,3);
-      driveBase.AutoDriveCalculation(90, 0.15, 37, 4);
-      driveBase.AutoDriveCalculation(180, 0.15, 34.75, 5);
-      driveBase.AutoDriveCalculation(270, 0.15, 37, 6);
-      driveBase.AutoDriveCalculation(326.8151843, 0.15, 41.672083, 7);
-      driveBase.AutoDriveCalculation(270, 0.15, 157, 8);
-      driveBase.AutoDriveCalculation(228.3527175, 0.15, 89.938868, 9);   
+      // driveBase.AutoDriveCalculation(135.0,0.05,84.852814,1);
+      // driveBase.AutoDriveCalculation(90.0,0.05,157.0,2);
+      // driveBase.AutoDriveCalculation(33.18481568, 0.05, 41.672083,3);
+      // driveBase.AutoDriveCalculation(90.0, 0.05, 37.0, 4);
+      // driveBase.AutoDriveCalculation(180.0, 0.05, 34.75, 5);
+      // driveBase.AutoDriveCalculation(270.0, 0.05, 37.0, 6);
+      // driveBase.AutoDriveCalculation(326.8151843, 0.05, 41.672083, 7);
+      // driveBase.AutoDriveCalculation(270.0, 0.05, 157.0, 8);
+      // driveBase.AutoDriveCalculation(228.3527175, 0.05, 89.938868, 9);   
       
     }
    
@@ -251,17 +252,22 @@ public class Robot extends TimedRobot {
 
    @Override
    public void autonomousPeriodic() {
+
+    driveBase.getNavxAngle(navx.getAngle());
     
+    //slolom
     driveBase.AutoDrive(1);
     driveBase.AutoDrive(2);
     driveBase.AutoDrive(3);
-    driveBase.AutoDrive(4);
-    driveBase.AutoDrive(5);
-    driveBase.AutoDrive(6);
-    driveBase.AutoDrive(7);
-    driveBase.AutoDrive(8);
-    driveBase.AutoDrive(9);
-    driveBase.AutoDriveStop(10);
+    // driveBase.AutoDrive(4);
+    // driveBase.AutoDrive(5);
+    // driveBase.AutoDrive(6);
+    // driveBase.AutoDrive(7);
+    // driveBase.AutoDrive(8);
+    // driveBase.AutoDrive(9);
+    // driveBase.AutoDriveStop(10);
+    
+    // driveBase.AutoDrive(1);
     
     
 
@@ -360,7 +366,7 @@ public class Robot extends TimedRobot {
       x *= .5;
       y *= .5;
     }
-    slowMode = false;
+    slowMode = true;
 
     //w * 0.7 limits rotational speed
     if(fieldOriented)
@@ -391,31 +397,31 @@ public class Robot extends TimedRobot {
       letUpX = true;
     }
     //this is what makes the shooter go to differenent levels of shooting power
-    // if(controller.getRawButtonPressed(X) && letUpX2){
-    //  lemon++;
-    //   if (lemon > 4){
-    //     lemon = 1;
-    //   }
-    //   letUpX2=false;
-    // }else if(!controller.getRawButton(X)) {
-    //   letUpX2=true;
-    // }
-
-      if(controller.getRawButtonPressed(X)&&letUpX2){
-        shooterSpeedTemp-=100;
-        SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
-        letUpX2=false;
-      }else if(!controller.getRawButton(X)){
-        letUpX2=true;
+    if(controller.getRawButtonPressed(X) && letUpX2){
+     lemon++;
+      if (lemon > 4){
+        lemon = 1;
       }
+      letUpX2=false;
+    }else if(!controller.getRawButton(X)) {
+      letUpX2=true;
+    }
 
-      if(controller.getRawButtonPressed(Y)&&letUpY){
-        shooterSpeedTemp+=100;
-        SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
-        letUpY=false;
-      }else if(!controller.getRawButton(Y)){
-        letUpY=true;
-      }
+      // if(controller.getRawButtonPressed(X)&&letUpX2){
+      //   shooterSpeedTemp-=100;
+      //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      //   letUpX2=false;
+      // }else if(!controller.getRawButton(X)){
+      //   letUpX2=true;
+      // }
+
+      // if(controller.getRawButtonPressed(Y)&&letUpY){
+      //   shooterSpeedTemp+=100;
+      //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      //   letUpY=false;
+      // }else if(!controller.getRawButton(Y)){
+      //   letUpY=true;
+      // }
 
 
     //actuation code for spinner
@@ -483,13 +489,13 @@ public class Robot extends TimedRobot {
     //Shooter, default value = 4200
     //last three numbers are random and are a work in progress
     if(controller.getRawButton(leftBumper) && lemon == 1) {
-      shooterSpeed = shooterSpeedTemp;
+      shooterSpeed = 3600.0;
     } else if(controller.getRawButton(leftBumper) && lemon == 2) {
-      shooterSpeed = shooterSpeedTemp;
+      shooterSpeed = 3400.0;
     } else if (controller.getRawButton(leftBumper) && lemon == 3){
-      shooterSpeed = shooterSpeedTemp;
+      shooterSpeed = 3500.0;
     } else if (controller.getRawButton(leftBumper) && lemon == 4){
-      shooterSpeed = shooterSpeedTemp;
+      shooterSpeed = 4600.0;
     } else {
       shooterPID.setIAccum(0);
     }
@@ -608,7 +614,8 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("carouselVelPID", carouselVelPID);
       
       */SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
-      SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);/*
+      SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      SmartDashboard.putNumber("Level",lemon);/*
       SmartDashboard.putNumber("carousel Pos", carousel.getSelectedSensorPosition());
       */SmartDashboard.putNumber("carousel Vel", carousel.getSelectedSensorVelocity());
       //SmartDashboard.putNumber("HookLift", hookLift.getSelectedSensorPosition());
