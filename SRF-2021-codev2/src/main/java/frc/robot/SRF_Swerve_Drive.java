@@ -6,6 +6,7 @@ package frc.robot;
 
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.kauailabs.navx.frc.AHRS;
 
 class SRF_Swerve_Drive {
     
@@ -16,6 +17,9 @@ class SRF_Swerve_Drive {
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
     private double AutoMotorRotationsTotal=0;
     private double AutoDriveTempRemovable;
+    Double autoDriftX;
+    Double autoDriftY;
+    Double gyroStartAngle;
 
     private static boolean AutoDriveCompletion=false;
 
@@ -39,6 +43,8 @@ class SRF_Swerve_Drive {
     private SRF_Swerve_Module frontRightModule;
     private SRF_Swerve_Module rearLeftModule;
     private SRF_Swerve_Module rearRightModule;
+
+    AHRS navx;
 
     public SRF_Swerve_Drive(SRF_Swerve_Module frontLeft, SRF_Swerve_Module frontRight, SRF_Swerve_Module rearLeft,
                             SRF_Swerve_Module rearRight, double w, double t, double r) {
@@ -275,24 +281,69 @@ class SRF_Swerve_Drive {
         AutoXList[i]=AutoX;
         AutoYList[i]=AutoY;
         AutoMotorRotationsList[i]=AutoMotorRotations;
-
+        gyroStartAngle=navx.getAngle();
         AutoDriveTempRemovable=frontLeftModule.getMotorPosition();
         
     }
 
+    public void DriftCalculation(double AA,double AS,double AD){
+        
+        AutoAngle=AA;
+        AutoSpeed=AS;
+        AutoDistance=AD;
+        
+        
+        
+        //Changes degrees to radians
+        AutoAngle*=(Math.PI/180);
+        //This sets the two cordinates to points between -1 and 1
+        AutoX=Math.cos(AutoAngle);
+        AutoY=Math.sin(AutoAngle);
+        //AutoSpeed
+        //Normalization of cordinates
+        //Takes the two points and multiplies them by t1.5708he speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
+        if(Math.abs(AutoX)>=0.99999){
+            //max speed
+        }else if(Math.abs(AutoY)>=0.99999){
+            //max speeD  
+            //these if statments make it so one cordinate always has 1 in it, so it can achive max speed
+        }else if(Math.abs(AutoY)>Math.abs(AutoX)){
+            AutoSpeedMaxer=1/AutoY;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }else {
+            AutoSpeedMaxer=1/AutoX;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }
+        //This mulitplies the cordinates by the speed modifier
+        AutoX=AutoX*AutoSpeed;
+        AutoY=AutoY*AutoSpeed;
+        autoDriftX=AutoX;
+        autoDriftY=AutoY;
+    }
+        
+        
+
+       
+
     public void AutoDrive(int i){
         int holder = i;
-        //double AutoDriveDriftFixerAngle=navx.getAngle();
+        double AutoDriveDriftFixerAngle=navx.getAngle();
         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
         AutoMotorTemp=Math.abs(AutoMotorTemp);
         if(AutoMotorTemp<AutoMotorRotationsList[i]&&AutoMotorTemp>=AutoMotorRotationsList[i-1]){
-            // if(AutoDriveDriftFixerAngle>gyroStartAngle){
-            //     AutoDriveCalculation(AutoAngleList[holder]+AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
-            //     //switch the plus or minus if drift is doubled
-            // }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
-            //     AutoDriveCalculation(AutoAngleList[holder]-AutoDriveDriftFixerAngle, AutoSpeedList[holder], AutoDistanceList[holder], holder);
-            // }
-            set(AutoXList[holder],AutoYList[holder],0);
+             if(AutoDriveDriftFixerAngle>gyroStartAngle){
+                DriftCalculation(AutoDriveDriftFixerAngle-gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
+                set(AutoXList[holder]-autoDriftX,AutoYList[holder]-autoDriftY,0);
+                //switch the plus or minus if drift is doubled
+            }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
+                DriftCalculation(AutoDriveDriftFixerAngle+gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
+                set(AutoXList[holder]+autoDriftX,AutoYList[holder]+autoDriftY,0);
+            }
+            //set(AutoXList[holder],AutoYList[holder],0);
 
         }
         SmartDashboard.putNumber("Holder", holder);
@@ -305,7 +356,8 @@ class SRF_Swerve_Drive {
         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoDriveTempRemovable;
         AutoMotorTemp=Math.abs(AutoMotorTemp);
         if(AutoMotorTemp>=AutoMotorRotationsList[holder-1]-0.5){
-            set(0,0,0);
+            //set(0,0,0);
+            setSpeedZero();
         }
     }
 

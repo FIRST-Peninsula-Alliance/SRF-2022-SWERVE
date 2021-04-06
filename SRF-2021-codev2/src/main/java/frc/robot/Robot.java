@@ -50,7 +50,7 @@ public class Robot extends TimedRobot {
   Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
 
   //Button numbers for controls
-  final int A = 2, B = 3, X = 1, Y = 4, leftBumper = 5, rightBumper = 6, leftTrigger = 7, rightTrigger = 8, back = 9, start = 10;
+  final int A = 2, B = 3, X = 1, Y = 4, leftBumper = 5, rightBumper = 6, leftTrigger = 7, rightTrigger = 8, back = 9, start = 10, dPadUp=11, dPadDown=12;
 
 
   //AutoTicker that goes through each path
@@ -118,9 +118,10 @@ public class Robot extends TimedRobot {
 
   boolean testRotationController = true;
 
-  Boolean letUpB = true, letUpX = true, letUpStart = true, letUpBack = true, letUpRBump, letUpX2 = true, letUpPOV180 = true;
+  Boolean letUpB = true, letUpX = true, letUpY=true, letUpStart = true, letUpBack = true, letUpRBump, letUpX2 = true, letUpPOV180 = true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
-  Double carouselSpeed, outtakeSpeed, shooterSpeed; 
+//shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
+  Double carouselSpeed, outtakeSpeed, shooterSpeed, shooterSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = false, unjam = false;
@@ -309,6 +310,7 @@ public class Robot extends TimedRobot {
     arm.set(Value.kForward);
     //spinner.set(Value.kReverse);
     hood.set(Value.kReverse);
+    shooterSpeedTemp=4600.0;
   }
 
   @Override
@@ -388,18 +390,34 @@ public class Robot extends TimedRobot {
     } else if(!controller.getRawButton(A)) {
       letUpX = true;
     }
+    //this is what makes the shooter go to differenent levels of shooting power
+    // if(controller.getRawButtonPressed(X) && letUpX2){
+    //  lemon++;
+    //   if (lemon > 4){
+    //     lemon = 1;
+    //   }
+    //   letUpX2=false;
+    // }else if(!controller.getRawButton(X)) {
+    //   letUpX2=true;
+    // }
 
-    if(controller.getRawButtonPressed(X) && letUpX2){
-      if(lemon < 4){
-        lemon++;
+      if(controller.getRawButtonPressed(X)&&letUpX2){
+        shooterSpeedTemp-=100;
+        SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+        letUpX2=false;
+      }else if(!controller.getRawButton(X)){
+        letUpX2=true;
       }
-      if (lemon >= 4){
-        lemon = 1;
+
+      if(controller.getRawButtonPressed(Y)&&letUpY){
+        shooterSpeedTemp+=100;
+        SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+        letUpY=false;
+      }else if(!controller.getRawButton(Y)){
+        letUpY=true;
       }
-      letUpX2=false;
-    }else if(!controller.getRawButton(X)) {
-      letUpX2=true;
-    }
+
+
     //actuation code for spinner
     // if(controller.getRawButtonPressed(start) && letUpStart)
     // {
@@ -465,18 +483,18 @@ public class Robot extends TimedRobot {
     //Shooter, default value = 4200
     //last three numbers are random and are a work in progress
     if(controller.getRawButton(leftBumper) && lemon == 1) {
-      shooterSpeed = 3100.0;
+      shooterSpeed = shooterSpeedTemp;
     } else if(controller.getRawButton(leftBumper) && lemon == 2) {
-      shooterSpeed = 3600.0;
+      shooterSpeed = shooterSpeedTemp;
     } else if (controller.getRawButton(leftBumper) && lemon == 3){
-      shooterSpeed = 4000.0;
+      shooterSpeed = shooterSpeedTemp;
     } else if (controller.getRawButton(leftBumper) && lemon == 4){
-      shooterSpeed = 4600.0;
+      shooterSpeed = shooterSpeedTemp;
     } else {
       shooterPID.setIAccum(0);
     }
     
-
+//4600 is good number
   
 
 
@@ -566,11 +584,14 @@ public class Robot extends TimedRobot {
       arnold.stop();
     }
 
+    
+
     //SmartDashboard commands
     if(dashboardDelay == 3) {
       SmartDashboard.putBoolean("Hood Down", hoodDown);
       SmartDashboard.putBoolean("Field Oriented", fieldOriented);
       SmartDashboard.putBoolean("Shoot", shooterEncoder.getVelocity() > 4000);
+      
       //SmartDashboard.putNumber("distance to base", colorSensor.getProximity());
       //SmartDashboard.putBoolean("distance to base", colorSensor.getProximity() < 3);
 
@@ -585,7 +606,9 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("CarouselSpeed", carouselSpeed);
       SmartDashboard.putNumber("Carousel I Accum", carousel.getIntegralAccumulator());
       SmartDashboard.putBoolean("carouselVelPID", carouselVelPID);
-      */SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());/*
+      
+      */SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
+      SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);/*
       SmartDashboard.putNumber("carousel Pos", carousel.getSelectedSensorPosition());
       */SmartDashboard.putNumber("carousel Vel", carousel.getSelectedSensorVelocity());
       //SmartDashboard.putNumber("HookLift", hookLift.getSelectedSensorPosition());
