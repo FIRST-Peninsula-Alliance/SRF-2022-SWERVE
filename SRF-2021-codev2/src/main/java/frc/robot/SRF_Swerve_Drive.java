@@ -274,7 +274,9 @@ class SRF_Swerve_Drive {
         //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
-       
+        for(int j=0;j<AutoMotorRotationsList.length;j++){
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
+        }
         
         //AutoDistance
         //this is calculating the amount of times the motor needs to rotate,
@@ -282,9 +284,7 @@ class SRF_Swerve_Drive {
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
         AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
-        for(int j=0;j<AutoMotorRotationsList.length;j++){
-            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
-        }
+        
         SmartDashboard.putNumber("AutoXNumber", AutoX);
         SmartDashboard.putNumber("AutoYNumber", AutoY);
         SmartDashboard.putNumber("AutoMotorRotations",AutoMotorRotations);
@@ -300,11 +300,11 @@ class SRF_Swerve_Drive {
     }
     
 
-    public void DriftCalculation(double AA,double AS,double AD){
+    public void DriftCalculation(double AA,double AS){
         
         AutoAngle=AA;
         AutoSpeed=AS;
-        AutoDistance=AD;
+        
         
         
         
@@ -355,12 +355,12 @@ class SRF_Swerve_Drive {
             
              if(AutoDriveDriftFixerAngle>gyroStartAngle){
                  
-                DriftCalculation(AutoDriveDriftFixerAngle-gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
+                DriftCalculation(AutoDriveDriftFixerAngle-gyroStartAngle, AutoSpeedList[holder]);
                 set(AutoXList[holder]-autoDriftX,AutoYList[holder]-autoDriftY,0);
                 checker=holder;
                 //switch the plus or minus if drift is doubled
             }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
-                DriftCalculation(AutoDriveDriftFixerAngle+gyroStartAngle, AutoSpeedList[holder], AutoDistanceList[holder]);
+                DriftCalculation(AutoDriveDriftFixerAngle+gyroStartAngle, AutoSpeedList[holder]);
                 set(AutoXList[i]+autoDriftX,AutoYList[i]+autoDriftY,0);
                 checker=holder;
             }else{

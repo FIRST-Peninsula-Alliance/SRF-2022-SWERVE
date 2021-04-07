@@ -229,7 +229,7 @@ public class Robot extends TimedRobot {
      
      driveBase.getGyroStart(navx.getAngle());
      
-       driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
+     driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
      driveBase.AutoDriveCalculation(4.0, 0.10,36.0, 2);
      driveBase.AutoDriveCalculation(270.0, 0.10, 36.0, 3);
       
