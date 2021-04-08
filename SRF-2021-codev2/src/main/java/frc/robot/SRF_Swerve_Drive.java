@@ -8,6 +8,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
+
 class SRF_Swerve_Drive {
     
     private double wheelBase, trackWidth, radius;
@@ -15,7 +16,7 @@ class SRF_Swerve_Drive {
     private double AutoAngle, AutoSpeed, AutoDistance;
     private double AutoMotorTemp = 0.0;
     private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
-    private double AutoMotorRotationsTotal=0;
+    private double AutoMotorRotationsTotal=0.0;
     private double AutoDriveTempRemovable;
     double autoDriftX;
     double autoDriftY;
@@ -37,8 +38,10 @@ class SRF_Swerve_Drive {
     private double[] AutoAngleList = new double[100];
     private double[] AutoSpeedList = new double[100];
     private double[] AutoDistanceList = new double[100];
-    
-   
+    private double[] AutoMotorRotationsListClean = new double[100];
+    private double[] AutoDriftXList = new double[100];
+    private double[] AutoDriftYList = new double[100];
+     
 
     private double[] wheelSpeed = new double[4];
     private double[] wheelAngle = new double[4];
@@ -274,8 +277,10 @@ class SRF_Swerve_Drive {
         //This mulitplies the cordinates by the speed modifier
         AutoX=AutoX*AutoSpeed;
         AutoY=AutoY*AutoSpeed;
+        
+        AutoMotorRotationsTotal=0.0;
         for(int j=0;j<AutoMotorRotationsList.length;j++){
-            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsList[j];
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsListClean[j];
         }
         
         //AutoDistance
@@ -283,13 +288,14 @@ class SRF_Swerve_Drive {
         //it takes the distance and divides it by the wheels circumfrence and then multiplies it by the amount of rpms for one wheel rotation
         double circumference = Math.PI*(2*WheelRadius);
         AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
+        AutoMotorRotationsListClean[i]=AutoMotorRotations;
         AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
         
         SmartDashboard.putNumber("AutoXNumber", AutoX);
         SmartDashboard.putNumber("AutoYNumber", AutoY);
         SmartDashboard.putNumber("AutoMotorRotations",AutoMotorRotations);
         AutoAngleList[i]=AutoAngle;
-        AutoSpeedList[i]=AutoAngle;
+        AutoSpeedList[i]=AutoSpeed;
         AutoDistanceList[i]=AutoDistance;
         AutoXList[i]=AutoX;
         AutoYList[i]=AutoY;
@@ -300,8 +306,8 @@ class SRF_Swerve_Drive {
     }
     
 
-    public void DriftCalculation(double AA,double AS){
-        
+    public void DriftCalculation(double AA,double AS,int i){
+        int holder=i;
         AutoAngle=AA;
         AutoSpeed=AS;
         
@@ -315,7 +321,7 @@ class SRF_Swerve_Drive {
         AutoY=Math.sin(AutoAngle);
         //AutoSpeed
         //Normalization of cordinates
-        //Takes the two points and multiplies them by t1.5708he speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
+        //Takes the two points and multiplies them by the speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
         if(Math.abs(AutoX)>=0.99999){
             //max speed
         }else if(Math.abs(AutoY)>=0.99999){
@@ -337,35 +343,37 @@ class SRF_Swerve_Drive {
         AutoY=AutoY*AutoSpeed;
         autoDriftX=AutoX;
         autoDriftY=AutoY;
+        AutoDriftXList[holder]=autoDriftX;
+        AutoDriftYList[holder]=autoDriftY;
     }
         
         
 
        
 
-    public void AutoDrive(int i){
+    public void AutoDrive(int i,double StartAngle, Double NewAngle){
         
         int holder = i;
-        double AutoDriveDriftFixerAngle=getNavxAngle(navxAngle);
-       
+        double AutoDriveDriftFixerAngle=NewAngle;
+        double NewStartAngle=StartAngle;
         
         AutoMotorDifference=AutoMotorTotal-Math.abs(frontLeftModule.getMotorPosition()-AutoDriveTempRemovable);
         AutoMotorTotal=Math.abs(AutoMotorDifference)+AutoMotorTotal;
         if(AutoMotorTotal<AutoMotorRotationsList[i]&&AutoMotorTotal>=AutoMotorRotationsList[i-1]){
             
-             if(AutoDriveDriftFixerAngle>gyroStartAngle){
+             if(AutoDriveDriftFixerAngle>NewStartAngle){
                  
-                DriftCalculation(AutoDriveDriftFixerAngle-gyroStartAngle, AutoSpeedList[holder]);
-                set(AutoXList[holder]-autoDriftX,AutoYList[holder]-autoDriftY,0);
-                checker=holder;
+                DriftCalculation(AutoAngleList[holder]+((Math.abs(AutoDriveDriftFixerAngle)-Math.abs(NewStartAngle))), AutoSpeedList[holder],holder);
+                set(AutoDriftYList[holder],AutoDriftXList[holder],0);
+                checker=25;
                 //switch the plus or minus if drift is doubled
-            }else if(AutoDriveDriftFixerAngle<gyroStartAngle){
-                DriftCalculation(AutoDriveDriftFixerAngle+gyroStartAngle, AutoSpeedList[holder]);
-                set(AutoXList[i]+autoDriftX,AutoYList[i]+autoDriftY,0);
-                checker=holder;
+            }else if(AutoDriveDriftFixerAngle<NewStartAngle){
+                DriftCalculation(AutoAngleList[holder]-((Math.abs(AutoDriveDriftFixerAngle)-Math.abs(NewStartAngle))), AutoSpeedList[holder],holder);
+                set(AutoDriftYList[holder],AutoDriftXList[holder],0);
+                checker=50;
             }else{
                 set(AutoXList[i],AutoYList[i],0);
-                checker=holder;
+                checker=99;
             }
             
             //set(AutoXList[holder],AutoYList[holder],0);
@@ -377,7 +385,10 @@ class SRF_Swerve_Drive {
         SmartDashboard.putNumberArray("AutoAngleList", AutoAngleList);
         SmartDashboard.putNumberArray("AutoSpeedList", AutoSpeedList);
         SmartDashboard.putNumberArray("AutoDistanceList", AutoDistanceList);
-        
+        SmartDashboard.putNumber("NewAngle",NewAngle);
+        SmartDashboard.putNumber("StartAngle",NewStartAngle);
+        SmartDashboard.putNumber("DriftX",AutoDriftXList[1]);
+        SmartDashboard.putNumber("DriftY",AutoDriftYList[1]);
     }
 
     public void AutoDriveStop(int i){

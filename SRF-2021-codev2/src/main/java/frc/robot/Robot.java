@@ -227,16 +227,21 @@ public class Robot extends TimedRobot {
        zeroYaw += 360;
      }
      
-     driveBase.getGyroStart(navx.getAngle());
      
-     driveBase.AutoDriveCalculation(90.0, 0.15, 36.0, 1);
-     driveBase.AutoDriveCalculation(4.0, 0.10,36.0, 2);
-     driveBase.AutoDriveCalculation(270.0, 0.10, 36.0, 3);
+     
+    //  driveBase.AutoDriveCalculation(90.0, 0.05, 50.0, 1);
+    //  driveBase.AutoDriveCalculation(4.0, 0.10,36.0, 2);
+    //  driveBase.AutoDriveCalculation(90.0, 0.10, 36.0, 3);
+    //  driveBase.AutoDriveCalculation(4.0,0.10,1.0,4);
       
+    driveBase.AutoDriveCalculation(90, 0.1, 500, 1);
+    // driveBase.AutoDriveCalculation(180, 0.1, 30, 2);
+    // driveBase.AutoDriveCalculation(90, 0.1, 30, 3);
+    // driveBase.AutoDriveCalculation(180, 0.1, 30, 4);
 
 
      //slalom
-      // driveBase.AutoDriveCalculation(135.0,0.05,84.852814,1);
+      //driveBase.AutoDriveCalculation(135.0,0.05,84.852814,1);
       // driveBase.AutoDriveCalculation(90.0,0.05,157.0,2);
       // driveBase.AutoDriveCalculation(33.18481568, 0.05, 41.672083,3);
       // driveBase.AutoDriveCalculation(90.0, 0.05, 37.0, 4);
@@ -245,7 +250,7 @@ public class Robot extends TimedRobot {
       // driveBase.AutoDriveCalculation(326.8151843, 0.05, 41.672083, 7);
       // driveBase.AutoDriveCalculation(270.0, 0.05, 157.0, 8);
       // driveBase.AutoDriveCalculation(228.3527175, 0.05, 89.938868, 9);   
-      
+      gyroStartAngle=navx.getAngle();
     }
    
    
@@ -253,19 +258,19 @@ public class Robot extends TimedRobot {
    @Override
    public void autonomousPeriodic() {
 
-    driveBase.getNavxAngle(navx.getAngle());
+    
     
     //slolom
-    driveBase.AutoDrive(1);
-    driveBase.AutoDrive(2);
-    driveBase.AutoDrive(3);
-    // driveBase.AutoDrive(4);
-    // driveBase.AutoDrive(5);
-    // driveBase.AutoDrive(6);
-    // driveBase.AutoDrive(7);
-    // driveBase.AutoDrive(8);
-    // driveBase.AutoDrive(9);
-    // driveBase.AutoDriveStop(10);
+    driveBase.AutoDrive(1,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(2,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(3,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(4,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(5,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(6,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(7,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(8,gyroStartAngle,navx.getAngle());
+    // driveBase.AutoDrive(9,gyroStartAngle,navx.getAngle());
+    driveBase.AutoDriveStop(2);
     
     // driveBase.AutoDrive(1);
     
@@ -366,7 +371,7 @@ public class Robot extends TimedRobot {
       x *= .5;
       y *= .5;
     }
-    slowMode = true;
+   
 
     //w * 0.7 limits rotational speed
     if(fieldOriented)
@@ -407,8 +412,8 @@ public class Robot extends TimedRobot {
       letUpX2=true;
     }
 
-      // if(controller.getRawButtonPressed(X)&&letUpX2){
-      //   shooterSpeedTemp-=100;
+      // if(controller.getRawButtonPressed(Y)&&letUpX2){
+      //   shooterSpeedTemp-=50;
       //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       //   letUpX2=false;
       // }else if(!controller.getRawButton(X)){
@@ -416,12 +421,20 @@ public class Robot extends TimedRobot {
       // }
 
       // if(controller.getRawButtonPressed(Y)&&letUpY){
-      //   shooterSpeedTemp+=100;
-      //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
-      //   letUpY=false;
-      // }else if(!controller.getRawButton(Y)){
-      //   letUpY=true;
+      //   
+      //   slowMode=true;
+      //   letUpX2=false;
+      // }else if(!controller.getRawButton(X)){
+      //   letUpX2=true;
+
       // }
+
+      if(controller.getRawButton(Y)){
+        slowMode=true;
+        
+      }else if(!controller.getRawButton(Y)){
+        slowMode=false;
+      }
 
 
     //actuation code for spinner
@@ -489,13 +502,13 @@ public class Robot extends TimedRobot {
     //Shooter, default value = 4200
     //last three numbers are random and are a work in progress
     if(controller.getRawButton(leftBumper) && lemon == 1) {
-      shooterSpeed = 3600.0;
-    } else if(controller.getRawButton(leftBumper) && lemon == 2) {
-      shooterSpeed = 3400.0;
-    } else if (controller.getRawButton(leftBumper) && lemon == 3){
-      shooterSpeed = 3500.0;
-    } else if (controller.getRawButton(leftBumper) && lemon == 4){
       shooterSpeed = 4600.0;
+    } else if(controller.getRawButton(leftBumper) && lemon == 2) {
+      shooterSpeed = 3500.0;
+    } else if (controller.getRawButton(leftBumper) && lemon == 3){
+      shooterSpeed = 3400.0;
+    } else if (controller.getRawButton(leftBumper) && lemon == 4){
+      shooterSpeed = 2800.0;
     } else {
       shooterPID.setIAccum(0);
     }
