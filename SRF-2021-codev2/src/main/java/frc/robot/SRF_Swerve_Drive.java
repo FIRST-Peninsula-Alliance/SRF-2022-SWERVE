@@ -12,7 +12,40 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 class SRF_Swerve_Drive {
     
     private double wheelBase, trackWidth, radius;
-    
+    //autoDistance in inches, use decimal
+    private double AutoAngle, AutoSpeed, AutoDistance;
+    private double AutoMotorTemp = 0.0;
+    private double AutoMotorRotations,WheelRadius, AutoX,AutoY, AutoSpeedMaxer, RevolutionsperWheelSpin;
+    private double AutoMotorRotationsTotal=0.0;
+    private double AutoDriveTempRemovable;
+    double autoDriftX;
+    double autoDriftY;
+    double gyroStartAngle;
+    double navxAngle;
+    double AutoMotorTotal=0.0;
+    double AutoMotorDifference;
+    int checker=99;
+
+    private static boolean AutoDriveCompletion=false;
+
+    //private boolean AutoRemovableCompletion;
+
+    private static boolean AutoDriveCalculationSwitch=false;
+
+    private double[] AutoXList = new double[100];
+    private double[] AutoYList = new double[100];
+    private double[] AutoMotorRotationsList = new double[100];
+    private double[] AutoAngleList = new double[100];
+    private double[] AutoSpeedList = new double[100];
+    private double[] AutoDistanceList = new double[100];
+    private double[] AutoMotorRotationsListClean = new double[100];
+    private double[] AutoDriftXList = new double[100];
+    private double[] AutoDriftYList = new double[100];
+     
+
+    private double[] wheelSpeed = new double[4];
+    private double[] wheelAngle = new double[4];
+
     private SRF_Swerve_Module frontLeftModule;
     private SRF_Swerve_Module frontRightModule;
     private SRF_Swerve_Module rearLeftModule;
@@ -72,6 +105,7 @@ class SRF_Swerve_Drive {
         C = Y - W*(trackWidth/radius);
         D = Y + W*(trackWidth/radius);
 
+        
         wheelSpeed[0] = (Math.sqrt(Math.pow(B,2) + Math.pow(C,2)));
         wheelSpeed[1] = Math.sqrt(Math.pow(B,2) + Math.pow(D,2));
         wheelSpeed[2] = Math.sqrt(Math.pow(A,2) + Math.pow(D,2));
@@ -187,9 +221,211 @@ class SRF_Swerve_Drive {
         return wheelAngle[3];
     }
 
+    public static boolean getAutoDriveCompletion(){
+        return AutoDriveCompletion;
+
+    }
+
+    public static boolean getSwerveDriveCalculation(){
+        return AutoDriveCalculationSwitch;
+
+    }
+
+    public static void setSwerveDriveCalculation(boolean cond){
+        AutoDriveCalculationSwitch=cond;
+
+    }
+
+    public static void setSwerveDriveCompletion(boolean cond){
+        AutoDriveCompletion=cond;
+    }
+
+    //AA=AutoAngle,AS=AutoSpeed,AD=AutoDistance;
+    public void AutoDriveCalculation(double AA,double AS,double AD,int i){
+        
+        AutoAngle=AA;
+        AutoSpeed=AS;
+        AutoDistance=AD;
+        WheelRadius=2;
+        //change to 1024? 1024 was the original but has been updated to 128 for testing purposes. 
+        RevolutionsperWheelSpin=6.00159435;
+        
+        
+        //Changes degrees to radians
+        AutoAngle*=(Math.PI/180);
+        //This sets the two cordinates to points between -1 and 1
+        AutoX=Math.cos(AutoAngle);
+        AutoY=Math.sin(AutoAngle);
+        //AutoSpeed
+        //Normalization of cordinates
+        //Takes the two points and multiplies them by t1.5708he speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
+        if(Math.abs(AutoX)>=0.99999){
+            //max speed
+        }else if(Math.abs(AutoY)>=0.99999){
+            //max speeD  
+            //these if statments make it so one cordinate always has 1 in it, so it can achive max speed
+        }else if(Math.abs(AutoY)>Math.abs(AutoX)){
+            AutoSpeedMaxer=1/AutoY;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }else {
+            AutoSpeedMaxer=1/AutoX;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }
+        //This mulitplies the cordinates by the speed modifier
+        AutoX=AutoX*AutoSpeed;
+        AutoY=AutoY*AutoSpeed;
+        
+        AutoMotorRotationsTotal=0.0;
+        for(int j=0;j<AutoMotorRotationsList.length;j++){
+            AutoMotorRotationsTotal=AutoMotorRotationsTotal+AutoMotorRotationsListClean[j];
+        }
+        
+        //AutoDistance
+        //this is calculating the amount of times the motor needs to rotate,
+        //it takes the distance and divides it by the wheels circumfrence and then multiplies it by the amount of rpms for one wheel rotation
+        double circumference = Math.PI*(2*WheelRadius);
+        AutoMotorRotations=(AutoDistance/circumference)*RevolutionsperWheelSpin;
+        AutoMotorRotationsListClean[i]=AutoMotorRotations;
+        AutoMotorRotations=AutoMotorRotations+AutoMotorRotationsTotal;
+        
+        SmartDashboard.putNumber("AutoXNumber", AutoX);
+        SmartDashboard.putNumber("AutoYNumber", AutoY);
+        SmartDashboard.putNumber("AutoMotorRotations",AutoMotorRotations);
+        AutoAngleList[i]=AutoAngle;
+        AutoSpeedList[i]=AutoSpeed;
+        AutoDistanceList[i]=AutoDistance;
+        AutoXList[i]=AutoX;
+        AutoYList[i]=AutoY;
+        AutoMotorRotationsList[i]=AutoMotorRotations;
+        
+        AutoDriveTempRemovable=frontLeftModule.getMotorPosition();
+        
+    }
     
 
-   
+    public void DriftCalculation(double AA,double AS,int i){
+        int holder=i;
+        AutoAngle=AA;
+        AutoSpeed=AS;
+        
+        
+        
+        
+        //Changes degrees to radians
+        AutoAngle*=(Math.PI/180);
+        //This sets the two cordinates to points between -1 and 1
+        AutoX=Math.cos(AutoAngle);
+        AutoY=Math.sin(AutoAngle);
+        //AutoSpeed
+        //Normalization of cordinates
+        //Takes the two points and multiplies them by the speed multipier, so if half speed multiplies by 0.5 and if full multiplies by 1 and does not change
+        if(Math.abs(AutoX)>=0.99999){
+            //max speed
+        }else if(Math.abs(AutoY)>=0.99999){
+            //max speeD  
+            //these if statments make it so one cordinate always has 1 in it, so it can achive max speed
+        }else if(Math.abs(AutoY)>Math.abs(AutoX)){
+            AutoSpeedMaxer=1/AutoY;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }else {
+            AutoSpeedMaxer=1/AutoX;
+            AutoSpeedMaxer=Math.abs(AutoSpeedMaxer);
+            AutoY=AutoY*AutoSpeedMaxer;
+            AutoX=AutoX*AutoSpeedMaxer;
+        }
+        //This mulitplies the cordinates by the speed modifier
+        AutoX=AutoX*AutoSpeed;
+        AutoY=AutoY*AutoSpeed;
+        autoDriftX=AutoX;
+        autoDriftY=AutoY;
+        AutoDriftXList[holder]=autoDriftX;
+        AutoDriftYList[holder]=autoDriftY;
+    }
+        
+        
+
+       
+
+    public void AutoDrive(int i,double StartAngle, Double NewAngle){
+        
+        int holder = i;
+        double AutoDriveDriftFixerAngle=NewAngle;
+        double NewStartAngle=StartAngle;
+        
+        AutoMotorDifference=AutoMotorTotal-Math.abs(frontLeftModule.getMotorPosition()-AutoDriveTempRemovable);
+        AutoMotorTotal=Math.abs(AutoMotorDifference)+AutoMotorTotal;
+        if(AutoMotorTotal<AutoMotorRotationsList[i]&&AutoMotorTotal>=AutoMotorRotationsList[i-1]){
+            
+             if(AutoDriveDriftFixerAngle>NewStartAngle){
+                 
+                DriftCalculation(AutoAngleList[holder]+((Math.abs(AutoDriveDriftFixerAngle)-Math.abs(NewStartAngle))), AutoSpeedList[holder],holder);
+                set(AutoDriftYList[holder],AutoDriftXList[holder],0);
+                checker=25;
+                //switch the plus or minus if drift is doubled
+            }else if(AutoDriveDriftFixerAngle<NewStartAngle){
+                DriftCalculation(AutoAngleList[holder]-((Math.abs(AutoDriveDriftFixerAngle)-Math.abs(NewStartAngle))), AutoSpeedList[holder],holder);
+                set(AutoDriftYList[holder],AutoDriftXList[holder],0);
+                checker=50;
+            }else{
+                set(AutoXList[i],AutoYList[i],0);
+                checker=99;
+            }
+            
+            //set(AutoXList[holder],AutoYList[holder],0);
+
+        }
+        SmartDashboard.putNumber("Checker", checker);
+        SmartDashboard.putNumber("Holder", holder);
+        SmartDashboard.putNumber("AutoMotorTotal",AutoMotorTotal);
+        SmartDashboard.putNumberArray("AutoAngleList", AutoAngleList);
+        SmartDashboard.putNumberArray("AutoSpeedList", AutoSpeedList);
+        SmartDashboard.putNumberArray("AutoDistanceList", AutoDistanceList);
+        SmartDashboard.putNumber("NewAngle",NewAngle);
+        SmartDashboard.putNumber("StartAngle",NewStartAngle);
+        SmartDashboard.putNumber("DriftX",AutoDriftXList[1]);
+        SmartDashboard.putNumber("DriftY",AutoDriftYList[1]);
+    }
+
+    public void AutoDriveStop(int i){
+        int holder=i;
+        AutoMotorDifference=AutoMotorTotal-Math.abs(frontLeftModule.getMotorPosition()-AutoDriveTempRemovable);
+        AutoMotorTotal=Math.abs(AutoMotorDifference)+AutoMotorTotal;
+        if(AutoMotorTotal>=AutoMotorRotationsList[holder-1]-0.5){
+            set(0,0,0);
+            
+        }
+    }
+
+    
+    
+    // public void AutoDrive()
+    // {
+        
+    //     if(AutoMotorTemp<AutoMotorRotations){
+    //         SRF_Swerve_Drive.setSwerveDriveCompletion(false);
+    //         AutoMotorTemp=frontLeftModule.getMotorPosition()-AutoRemovable;
+    //         set(AutoX,AutoY,0);
+            
+    //     }else{
+    //         set(0,0,0);
+    //         SRF_Swerve_Drive.setSwerveDriveCompletion(true);
+    //     }  
+        
+    // }
+    //FP=first point,SP=second point,TP=Third Point,AS=autospeed
+    //public void SwerveAutoSemiCirle(Double FP,SP,Radius,AS){
+        //AutoSpeed=AS
+        
+
+
+
+    //}
 
     
 }

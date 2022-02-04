@@ -103,10 +103,10 @@ public class SRF_PID { //v1.1.6
 	int axisx = 0;
 
 	//that talonSRX that gets updated
-	TalonSRX talon = null;
+	TalonFX talon = null;
 
 	//a method that sets this object as having a talonSRX to manage
-	public void setTalon(TalonSRX talonInput) {
+	public void setTalon(TalonFX talonInput) {
 		talon = talonInput;
 	}
 
