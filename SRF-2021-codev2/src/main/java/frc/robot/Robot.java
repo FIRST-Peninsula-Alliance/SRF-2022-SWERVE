@@ -87,13 +87,8 @@ public class Robot extends TimedRobot {
   VictorSPX intakeMotor, outtakeMotor;
   CANSparkMax shooterMotor;
 
-<<<<<<< HEAD
-  CANPIDController shooterPID,backspinPID;
-  CANEncoder shooterEncoder,backspinEncoder;
-=======
   CANPIDController shooterPID;
   CANEncoder shooterEncoder;
->>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
 
   AHRS navx;
   // Block pixyBlock;
@@ -140,7 +135,7 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
-  Double outtakeSpeed, shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
+  Double outtakeSpeed, shooterSpeed, shooterSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = false, unjam = false;
@@ -203,21 +198,7 @@ public class Robot extends TimedRobot {
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
     shooterEncoder = new CANEncoder(shooterMotor);
-<<<<<<< HEAD
-    
-
-    backspinMotor = new CANSparkMax(17, MotorType.kBrushless);
-    backspinMotor.setIdleMode(IdleMode.kCoast);
-    backspinPID = new CANPIDController(backspinMotor);
-    backspinPID.setP(shootkP);
-    backspinPID.setI(shootkI);
-    backspinPID.setD(shootkD);
-    backspinPID.setIMaxAccum(1.0, 0);
-    backspinEncoder = new CANEncoder(backspinMotor);
-    
-=======
-    shooterMotor.setOpenLoopRampRate(0.5);
->>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
+    //shooterMotor.setOpenLoopRampRate(0.5);
 
     arnold = new Compressor(0);
     arnold.setClosedLoopControl(true);
@@ -252,7 +233,7 @@ public class Robot extends TimedRobot {
 
      hoodSolenoid.set(Value.kForward);
      shooterMotor.set(0);
-     backspinMotor.set(0);
+     
 
      match.start();
      
@@ -324,7 +305,7 @@ public class Robot extends TimedRobot {
     pickupSolenoid.set(Value.kForward);
     hoodSolenoid.set(Value.kReverse);
     shooterSpeedTemp=4600.0;
-    backspinSpeedTemp=2300.0;
+    //backspinSpeedTemp=2300.0;
     
   }
 
@@ -332,7 +313,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     shooterSpeed = 0.0;
     outtakeSpeed = 0.0;
-    backspinSpeed=0.0;
+    //backspinSpeed=0.0;
     indexSensorValue1=indexSensor1.get();
     
     x = controller.getRawAxis(0);
@@ -543,25 +524,19 @@ public class Robot extends TimedRobot {
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
       indexMotorToggle=true;
       indexTimer.reset();
-<<<<<<< HEAD
-    }   
-    //FIXME only use one of the shooter code
-=======
     } 
 
->>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
     //shooter warmup
     if(RightTrigger&&letUpRightTrigger){
       shooterSpeedTemp-=50.0;
-      backspinSpeedTemp=25.0;
+      //backspinSpeedTemp=25.0;
       SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
     }else if(!RightTrigger){
-      letUpRightTrigger=true;;
+      letUpRightTrigger=true;
     }
 
     //shooter warmup other code
-<<<<<<< HEAD
     // if(RightTrigger){
     //   shooterMotor.set(1);
     //   backspinMotor.set(0.5);      
@@ -587,13 +562,6 @@ public class Robot extends TimedRobot {
       }
   //}
 
-=======
-    if(RightTrigger){
-      shooterMotor.set(1);      
-    }else{
-      shooterMotor.set(0);
-    }
->>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
 
     //example
     // if(controller.getRawButton(leftBumper) && letUpBack) {
@@ -652,11 +620,11 @@ public class Robot extends TimedRobot {
       shooterPID.setReference(shooterSpeed, ControlType.kVelocity);
     }
 
-    if(backspinSpeed==0){
-      backspinMotor.set(0);
-    }else{
-      backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
-    }
+    // if(backspinSpeed==0){
+    //   backspinMotor.set(0);
+    // }else{
+    //   backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
+    // }
 
     if(match.get() > 110) {
       arnold.stop();
