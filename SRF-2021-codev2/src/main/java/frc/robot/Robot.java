@@ -492,7 +492,7 @@ public class Robot extends TimedRobot {
     }
   
     //Outtake Function
-    if((controller.getRawButton(B))){
+    if((controller.getRawButton(X))){
       intakeMotor.set(ControlMode.PercentOutput, -1);
      }else{
       intakeMotor.set(ControlMode.PercentOutput, 0);
@@ -519,6 +519,7 @@ public class Robot extends TimedRobot {
       flapDown=false;
     }
 
+<<<<<<< HEAD
     
     //Shooter function
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
@@ -561,6 +562,8 @@ public class Robot extends TimedRobot {
         letUpPOV0 = true;
       }
   //}
+=======
+>>>>>>> parent of 8be5618 (added updated shooter code)
 
 
     //example
@@ -573,7 +576,23 @@ public class Robot extends TimedRobot {
     //   }
 
      
-      
+      //FIXME i think this is shooter code
+      // if(controller.getRawButtonPressed(Y)&&letUpX2){
+      //   shooterSpeedTemp-=50;
+      //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      //   letUpX2=false;
+      // }else if(!controller.getRawButton(X)){
+      //   letUpX2=true;
+      // }
+
+      // if(controller.getRawButtonPressed(Y)&&letUpY){
+      //   
+      //   slowMode=true;
+      //   letUpX2=false;
+      // }else if(!controller.getRawButton(X)){
+      //   letUpX2=true;
+
+      // }
    
     //FIXME Climber CODE
     //85000 at low power(.1 or .2)
@@ -595,6 +614,17 @@ public class Robot extends TimedRobot {
     // if(hookLift.getSelectedSensorPosition() < -100000) {
     //   slowMode = true;
     // }
+
+    
+    //FIXME this is real shooter function
+    //Shoot function
+    // if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
+    //   outtakeSpeed = -.6;
+    
+    // } 
+    
+
+    
 
     // if(controller.getPOV() == 0 /*&& Timer.getMatchTime() <= 30*/) {
     //   winch1.set(ControlMode.PercentOutput, 1);
