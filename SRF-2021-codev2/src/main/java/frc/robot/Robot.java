@@ -170,6 +170,8 @@ public class Robot extends TimedRobot {
     rearLeftRot = new TalonFX(34);
     rearRightRot = new TalonFX(35);
 
+    
+
     FLModule = new SRF_Swerve_Module(0,20, 19, drivekP, drivekI, drivekD, offSetFL);
     FRModule = new SRF_Swerve_Module(1,20, 19, drivekP, drivekI, drivekD, offSetFR);
     RLModule = new SRF_Swerve_Module(2,20, 19, drivekP, drivekI, drivekD, offSetRL);
@@ -196,6 +198,7 @@ public class Robot extends TimedRobot {
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
     shooterEncoder = new CANEncoder(shooterMotor);
+    shooterMotor.setOpenLoopRampRate(0.5);
 
     arnold = new Compressor(0);
     arnold.setClosedLoopControl(true);
@@ -375,9 +378,9 @@ public class Robot extends TimedRobot {
     //pickup motor code
     if((leftTrigger==true) && letUpLeftTrigger) {
       //falcon.set(ControlMode.PercentOutput, 0.5);
-      pickupCounter=0;
+        pickupCounter=0;
         letUpLeftTrigger = false;
-      } else if(leftTrigger==false && !letUpLeftTrigger) {
+      }else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
           //falcon.set(ControlMode.PercentOutput, 0.5);
@@ -508,16 +511,24 @@ public class Robot extends TimedRobot {
     //Shooter function
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
       indexMotorToggle=true;
+      indexTimer.reset();
     } 
 
     //shooter warmup
-      if(RightTrigger&&letUpRightTrigger){
-        shooterSpeedTemp-=50;
-        SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
-        letUpRightTrigger=false;
-      }else if(!RightTrigger){
-        letUpRightTrigger=true;;
-      }
+    if(RightTrigger&&letUpRightTrigger){
+      shooterSpeedTemp-=50;
+      SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      letUpRightTrigger=false;
+    }else if(!RightTrigger){
+      letUpRightTrigger=true;;
+    }
+
+    //shooter warmup other code
+    if(RightTrigger){
+      shooterMotor.set(1);      
+    }else{
+      shooterMotor.set(0);
+    }
 
     //example
     // if(controller.getRawButton(leftBumper) && letUpBack) {
