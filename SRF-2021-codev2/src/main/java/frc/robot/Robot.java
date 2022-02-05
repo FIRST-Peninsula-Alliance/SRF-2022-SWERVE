@@ -52,10 +52,11 @@ public class Robot extends TimedRobot {
   //Button numbers for controls
   //Flap=right bumber
   //Shooter=right trigger
+  //shooter shoot=right bumper
   //Pickup=left trigger
   //pickup pnumatic=left bumper
   //hood=y
-  //slowmode=leftsidejoystickbutton
+  //slowmode=rightjoystickbutton
   //field orient=left options
   //recenter field orient=right options
   //pickup out=x button
@@ -84,11 +85,11 @@ public class Robot extends TimedRobot {
   TalonFX falcon;
 
   TalonSRX indexMotor;
-  VictorSPX intakeMotor, outtakeMotor;
-  CANSparkMax shooterMotor;
+  VictorSPX intakeMotor;
+  CANSparkMax shooterMotor, backspinMotor;
 
-  CANPIDController shooterPID;
-  CANEncoder shooterEncoder;
+  CANPIDController shooterPID,backspinPID;
+  CANEncoder shooterEncoder,backspinEncoder;
 
   AHRS navx;
   // Block pixyBlock;
@@ -135,7 +136,7 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
-  Double outtakeSpeed, shooterSpeed, shooterSpeedTemp; 
+  Double outtakeSpeed, shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = false, unjam = false;
@@ -188,7 +189,7 @@ public class Robot extends TimedRobot {
     falcon = new TalonFX(19);
 
     intakeMotor = new VictorSPX(10);
-    outtakeMotor = new VictorSPX(11);
+    indexMotor = new TalonSRX(11);
     
     shooterMotor = new CANSparkMax(16, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
@@ -198,7 +199,17 @@ public class Robot extends TimedRobot {
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
     shooterEncoder = new CANEncoder(shooterMotor);
-    //shooterMotor.setOpenLoopRampRate(0.5);
+    
+
+    backspinMotor = new CANSparkMax(17, MotorType.kBrushless);
+    backspinMotor.setIdleMode(IdleMode.kCoast);
+    backspinPID = new CANPIDController(backspinMotor);
+    backspinPID.setP(shootkP);
+    backspinPID.setI(shootkI);
+    backspinPID.setD(shootkD);
+    backspinPID.setIMaxAccum(1.0, 0);
+    backspinEncoder = new CANEncoder(backspinMotor);
+    
 
     arnold = new Compressor(0);
     arnold.setClosedLoopControl(true);
@@ -233,7 +244,7 @@ public class Robot extends TimedRobot {
 
      hoodSolenoid.set(Value.kForward);
      shooterMotor.set(0);
-     
+     backspinMotor.set(0);
 
      match.start();
      
@@ -305,7 +316,7 @@ public class Robot extends TimedRobot {
     pickupSolenoid.set(Value.kForward);
     hoodSolenoid.set(Value.kReverse);
     shooterSpeedTemp=4600.0;
-    //backspinSpeedTemp=2300.0;
+    backspinSpeedTemp=2300.0;
     
   }
 
@@ -313,7 +324,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     shooterSpeed = 0.0;
     outtakeSpeed = 0.0;
-    //backspinSpeed=0.0;
+    backspinSpeed=0.0;
     indexSensorValue1=indexSensor1.get();
     
     x = controller.getRawAxis(0);
@@ -492,12 +503,13 @@ public class Robot extends TimedRobot {
     }
   
     //Outtake Function
-    if((controller.getRawButton(X))){
+    if((controller.getRawButton(B))){
       intakeMotor.set(ControlMode.PercentOutput, -1);
      }else{
       intakeMotor.set(ControlMode.PercentOutput, 0);
      }
 
+     //FIXME this needs to be switched off right bumper
      //flap code
      if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
     {
@@ -519,22 +531,21 @@ public class Robot extends TimedRobot {
       flapDown=false;
     }
 
-<<<<<<< HEAD
     
     //Shooter function
-    if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
+    if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800&&backspinEncoder.getVelocity()>1400){
       indexMotorToggle=true;
       indexTimer.reset();
-    } 
-
+    }   
+    //FIXME only use one of the shooter code
     //shooter warmup
     if(RightTrigger&&letUpRightTrigger){
       shooterSpeedTemp-=50.0;
-      //backspinSpeedTemp=25.0;
+      backspinSpeedTemp=25.0;
       SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
     }else if(!RightTrigger){
-      letUpRightTrigger=true;
+      letUpRightTrigger=true;;
     }
 
     //shooter warmup other code
@@ -562,8 +573,6 @@ public class Robot extends TimedRobot {
         letUpPOV0 = true;
       }
   //}
-=======
->>>>>>> parent of 8be5618 (added updated shooter code)
 
 
     //example
@@ -576,23 +585,7 @@ public class Robot extends TimedRobot {
     //   }
 
      
-      //FIXME i think this is shooter code
-      // if(controller.getRawButtonPressed(Y)&&letUpX2){
-      //   shooterSpeedTemp-=50;
-      //   SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
-      //   letUpX2=false;
-      // }else if(!controller.getRawButton(X)){
-      //   letUpX2=true;
-      // }
-
-      // if(controller.getRawButtonPressed(Y)&&letUpY){
-      //   
-      //   slowMode=true;
-      //   letUpX2=false;
-      // }else if(!controller.getRawButton(X)){
-      //   letUpX2=true;
-
-      // }
+      
    
     //FIXME Climber CODE
     //85000 at low power(.1 or .2)
@@ -615,17 +608,6 @@ public class Robot extends TimedRobot {
     //   slowMode = true;
     // }
 
-    
-    //FIXME this is real shooter function
-    //Shoot function
-    // if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
-    //   outtakeSpeed = -.6;
-    
-    // } 
-    
-
-    
-
     // if(controller.getPOV() == 0 /*&& Timer.getMatchTime() <= 30*/) {
     //   winch1.set(ControlMode.PercentOutput, 1);
     //   winch2.set(ControlMode.Follower, 14);
@@ -641,7 +623,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Match Time", Timer.getMatchTime());
 
 
-    outtakeMotor.set(ControlMode.PercentOutput, outtakeSpeed);
+    
     
 
     if(shooterSpeed == 0){
@@ -650,11 +632,11 @@ public class Robot extends TimedRobot {
       shooterPID.setReference(shooterSpeed, ControlType.kVelocity);
     }
 
-    // if(backspinSpeed==0){
-    //   backspinMotor.set(0);
-    // }else{
-    //   backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
-    // }
+    if(backspinSpeed==0){
+      backspinMotor.set(0);
+    }else{
+      backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
+    }
 
     if(match.get() > 110) {
       arnold.stop();
