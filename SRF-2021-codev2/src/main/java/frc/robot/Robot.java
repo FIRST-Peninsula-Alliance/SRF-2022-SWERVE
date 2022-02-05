@@ -201,14 +201,14 @@ public class Robot extends TimedRobot {
     shooterEncoder = new CANEncoder(shooterMotor);
     
 
-    backspinMotor = new CANSparkMax(16, MotorType.kBrushless);
+    backspinMotor = new CANSparkMax(17, MotorType.kBrushless);
     backspinMotor.setIdleMode(IdleMode.kCoast);
     backspinPID = new CANPIDController(backspinMotor);
     backspinPID.setP(shootkP);
     backspinPID.setI(shootkI);
     backspinPID.setD(shootkD);
     backspinPID.setIMaxAccum(1.0, 0);
-    shooterEncoder = new CANEncoder(backspinMotor);
+    backspinEncoder = new CANEncoder(backspinMotor);
     
 
     arnold = new Compressor(0);
@@ -626,10 +626,11 @@ public class Robot extends TimedRobot {
     
     
 
-    if(shooterSpeed == 0)
+    if(shooterSpeed == 0){
       shooterMotor.set(0);
-    else
+    }else{
       shooterPID.setReference(shooterSpeed, ControlType.kVelocity);
+    }
 
     if(backspinSpeed==0){
       backspinMotor.set(0);
