@@ -52,11 +52,10 @@ public class Robot extends TimedRobot {
   //Button numbers for controls
   //Flap=right bumber
   //Shooter=right trigger
-  //shooter shoot=right bumper
   //Pickup=left trigger
   //pickup pnumatic=left bumper
   //hood=y
-  //slowmode=rightjoystickbutton
+  //slowmode=leftsidejoystickbutton
   //field orient=left options
   //recenter field orient=right options
   //pickup out=x button
@@ -85,11 +84,16 @@ public class Robot extends TimedRobot {
   TalonFX falcon;
 
   TalonSRX indexMotor;
-  VictorSPX intakeMotor;
-  CANSparkMax shooterMotor, backspinMotor;
+  VictorSPX intakeMotor, outtakeMotor;
+  CANSparkMax shooterMotor;
 
+<<<<<<< HEAD
   CANPIDController shooterPID,backspinPID;
   CANEncoder shooterEncoder,backspinEncoder;
+=======
+  CANPIDController shooterPID;
+  CANEncoder shooterEncoder;
+>>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
 
   AHRS navx;
   // Block pixyBlock;
@@ -189,7 +193,7 @@ public class Robot extends TimedRobot {
     falcon = new TalonFX(19);
 
     intakeMotor = new VictorSPX(10);
-    indexMotor = new TalonSRX(11);
+    outtakeMotor = new VictorSPX(11);
     
     shooterMotor = new CANSparkMax(16, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
@@ -199,6 +203,7 @@ public class Robot extends TimedRobot {
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
     shooterEncoder = new CANEncoder(shooterMotor);
+<<<<<<< HEAD
     
 
     backspinMotor = new CANSparkMax(17, MotorType.kBrushless);
@@ -210,6 +215,9 @@ public class Robot extends TimedRobot {
     backspinPID.setIMaxAccum(1.0, 0);
     backspinEncoder = new CANEncoder(backspinMotor);
     
+=======
+    shooterMotor.setOpenLoopRampRate(0.5);
+>>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
 
     arnold = new Compressor(0);
     arnold.setClosedLoopControl(true);
@@ -509,7 +517,6 @@ public class Robot extends TimedRobot {
       intakeMotor.set(ControlMode.PercentOutput, 0);
      }
 
-     //FIXME this needs to be switched off right bumper
      //flap code
      if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
     {
@@ -533,11 +540,16 @@ public class Robot extends TimedRobot {
 
     
     //Shooter function
-    if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800&&backspinEncoder.getVelocity()>1400){
+    if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800){
       indexMotorToggle=true;
       indexTimer.reset();
+<<<<<<< HEAD
     }   
     //FIXME only use one of the shooter code
+=======
+    } 
+
+>>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
     //shooter warmup
     if(RightTrigger&&letUpRightTrigger){
       shooterSpeedTemp-=50.0;
@@ -549,6 +561,7 @@ public class Robot extends TimedRobot {
     }
 
     //shooter warmup other code
+<<<<<<< HEAD
     // if(RightTrigger){
     //   shooterMotor.set(1);
     //   backspinMotor.set(0.5);      
@@ -574,6 +587,13 @@ public class Robot extends TimedRobot {
       }
   //}
 
+=======
+    if(RightTrigger){
+      shooterMotor.set(1);      
+    }else{
+      shooterMotor.set(0);
+    }
+>>>>>>> parent of 931d2fb (Added Climber Code, and backspin motor)
 
     //example
     // if(controller.getRawButton(leftBumper) && letUpBack) {
@@ -623,7 +643,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Match Time", Timer.getMatchTime());
 
 
-    
+    outtakeMotor.set(ControlMode.PercentOutput, outtakeSpeed);
     
 
     if(shooterSpeed == 0){
