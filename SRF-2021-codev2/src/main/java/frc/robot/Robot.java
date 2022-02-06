@@ -115,7 +115,7 @@ public class Robot extends TimedRobot {
   //PIDVALUES
   final double drivekP = 0.55, drivekI = 0, drivekD = 0;
   final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
-  
+  final double backspinkP=0.00025, backspinkI=0.00000027, backspinkD=0;
 
   //Joystick values for swerve drive
   double x, y, w;
@@ -130,7 +130,7 @@ public class Robot extends TimedRobot {
   Boolean indexMotorToggle=false;
   Boolean indexTimerToggle=false;
   //these are used to check if the joystick is giving out a command because they are no longer on a button but instead an axis
-  Boolean leftTrigger=false, RightTrigger=false;
+  Boolean leftTrigger=false, rightTrigger=false;
 
   //these are to check if you let go of the button
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
@@ -188,10 +188,10 @@ public class Robot extends TimedRobot {
     //Ball Manipulating initialization
     falcon = new TalonFX(19);
 
-    intakeMotor = new VictorSPX(10);
+    intakeMotor = new VictorSPX(12);
     indexMotor = new TalonSRX(11);
     
-    shooterMotor = new CANSparkMax(16, MotorType.kBrushless);
+    shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
     shooterPID = new CANPIDController(shooterMotor);
     shooterPID.setP(shootkP);
@@ -201,12 +201,12 @@ public class Robot extends TimedRobot {
     shooterEncoder = new CANEncoder(shooterMotor);
     
 
-    backspinMotor = new CANSparkMax(17, MotorType.kBrushless);
+    backspinMotor = new CANSparkMax(10, MotorType.kBrushless);
     backspinMotor.setIdleMode(IdleMode.kCoast);
     backspinPID = new CANPIDController(backspinMotor);
-    backspinPID.setP(shootkP);
-    backspinPID.setI(shootkI);
-    backspinPID.setD(shootkD);
+    backspinPID.setP(backspinkP);
+    backspinPID.setI(backspinkI);
+    backspinPID.setD(backspinkD);
     backspinPID.setIMaxAccum(1.0, 0);
     backspinEncoder = new CANEncoder(backspinMotor);
     
@@ -217,7 +217,7 @@ public class Robot extends TimedRobot {
     pickupSolenoid= new DoubleSolenoid(9,3,4);
     hoodSolenoid = new DoubleSolenoid(9,1,6);
     //FIXME stuff for flap
-    flapSolenoid = new DoubleSolenoid(0,0,0);
+    //flapSolenoid = new DoubleSolenoid(0,0,0);
     
     //camera
     //cam = CameraServer.getInstance().startAutomaticCapture();
@@ -245,7 +245,7 @@ public class Robot extends TimedRobot {
      hoodSolenoid.set(Value.kForward);
      shooterMotor.set(0);
      backspinMotor.set(0);
-
+     
      match.start();
      
      gyroStartAngle=navx.getAngle();
@@ -382,13 +382,13 @@ public class Robot extends TimedRobot {
     }else{
       leftTrigger=false;
     }
-
+    SmartDashboard.putBoolean("leftTrigger", leftTrigger);
     if((Math.abs(controller.getRawAxis(3))>0.05)){
-      RightTrigger=true;
+      rightTrigger=true;
     }else{
-      RightTrigger=false;
+      rightTrigger=false;
     }
-
+    SmartDashboard.putBoolean("rightTrigger", rightTrigger);
     
     //pickup motor code
     if((leftTrigger==true) && letUpLeftTrigger) {
@@ -511,25 +511,25 @@ public class Robot extends TimedRobot {
 
      //FIXME this needs to be switched off right bumper
      //flap code
-     if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
-    {
-      if(flapDown == false) {
-        flapSolenoid.set(Value.kReverse);
-        flapDown = true;
-      } else {
-        flapSolenoid.set(Value.kForward);
-        flapDown = false;
-      }
-      letUpRBump = false;
-    } else if(!controller.getRawButton(rightBumper)) {
-      letUpRBump = true;
-    }
+    //  if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
+    // {
+    //   if(flapDown == false) {
+    //     flapSolenoid.set(Value.kReverse);
+    //     flapDown = true;
+    //   } else {
+    //     flapSolenoid.set(Value.kForward);
+    //     flapDown = false;
+    //   }
+    //   letUpRBump = false;
+    // } else if(!controller.getRawButton(rightBumper)) {
+    //   letUpRBump = true;
+    // }
 
     //brings up flap if above 25% speed
-    if(Math.abs(Y)>0.25||Math.abs(X)>0.25){
-      flapSolenoid.set(Value.kForward);
-      flapDown=false;
-    }
+    // if(Math.abs(Y)>0.25||Math.abs(X)>0.25){
+    //   flapSolenoid.set(Value.kForward);
+    //   flapDown=false;
+    // }
 
     
     //Shooter function
@@ -539,15 +539,15 @@ public class Robot extends TimedRobot {
     }   
     //FIXME only use one of the shooter code
     //shooter warmup
-    if(RightTrigger&&letUpRightTrigger){
-      shooterSpeedTemp-=50.0;
-      backspinSpeedTemp=25.0;
+    if(rightTrigger){
+      //shooterSpeed=2000.0;
+      backspinSpeed=4000.0;
       SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
-    }else if(!RightTrigger){
+    }else if(!rightTrigger){
       letUpRightTrigger=true;;
     }
-
+    SmartDashboard.putBoolean("letupright", letUpRightTrigger);
     //shooter warmup other code
     // if(RightTrigger){
     //   shooterMotor.set(1);
@@ -558,7 +558,7 @@ public class Robot extends TimedRobot {
     // }
     //FIXME for comp code
     //if(Timer.getMatchTime() <= 30){
-      
+      SmartDashboard.putNumber("velocityofbackspin", backspinEncoder.getVelocity());
       //climber up
       if(controller.getPOV()==0||controller.getPOV()==315||controller.getPOV()==45) {
             letUpPOV0 = false;
@@ -642,7 +642,7 @@ public class Robot extends TimedRobot {
       arnold.stop();
     }
 
-    
+    SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
 
     //SmartDashboard commands
     if(dashboardDelay == 3) {
@@ -666,7 +666,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("carouselVelPID", carouselVelPID);
       
       // SmartDashboard.putNumber("velocity", shooterEncoder.getVelocity());
-      // SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       // SmartDashboard.putNumber("Level",lemon);/*
       // SmartDashboard.putNumber("carousel Pos", carousel.getSelectedSensorPosition());
       // SmartDashboard.putNumber("carousel Vel", carousel.getSelectedSensorVelocity());
