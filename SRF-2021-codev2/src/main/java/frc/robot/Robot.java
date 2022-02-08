@@ -15,6 +15,7 @@ import com.revrobotics.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
+
 //import edu.wpi.cscore.UsbCamera;
 //import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -26,7 +27,11 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.networktables.*;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -46,6 +51,10 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
+
+  
+  
+
 
   Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
 
@@ -82,7 +91,7 @@ public class Robot extends TimedRobot {
   //Ball Motors
   //Full rotation = 1024 Counts
 
-  TalonFX falcon;
+  //TalonFX falcon;
 
   TalonSRX indexMotor;
   VictorSPX intakeMotor;
@@ -151,8 +160,8 @@ public class Robot extends TimedRobot {
   Timer match = new Timer();
   DigitalInput indexSensor1= new DigitalInput(0);
   //UsbCamera cam;
-
-  boolean fieldOriented = true;
+  //fixme
+  boolean fieldOriented = false;
 
   int dashboardDelay = 0;
 
@@ -161,22 +170,22 @@ public class Robot extends TimedRobot {
     //Driving initialization
     navx = new AHRS();
 
-    frontLeft = new TalonFX(19);
-    frontRight = new TalonFX(30);
-    rearLeft = new TalonFX(31);
-    rearRight = new TalonFX(32);
+    frontLeft = new TalonFX(12);
+    frontRight = new TalonFX(14);
+    rearLeft = new TalonFX(18);
+    rearRight = new TalonFX(16);
 
-    frontLeftRot = new TalonFX(20);
-    frontRightRot = new TalonFX(33);
-    rearLeftRot = new TalonFX(34);
-    rearRightRot = new TalonFX(35);
+    frontLeftRot = new TalonFX(11);
+    frontRightRot = new TalonFX(13);
+    rearLeftRot = new TalonFX(17);
+    rearRightRot = new TalonFX(15);
 
     
 
-    FLModule = new SRF_Swerve_Module(0,20, 19, drivekP, drivekI, drivekD, offSetFL);
-    FRModule = new SRF_Swerve_Module(1,20, 19, drivekP, drivekI, drivekD, offSetFR);
-    RLModule = new SRF_Swerve_Module(2,20, 19, drivekP, drivekI, drivekD, offSetRL);
-    RRModule = new SRF_Swerve_Module(3,20, 19, drivekP, drivekI, drivekD, offSetRR);
+    FLModule = new SRF_Swerve_Module(0,11, 12, drivekP, drivekI, drivekD, offSetFL);
+    FRModule = new SRF_Swerve_Module(1,13, 14, drivekP, drivekI, drivekD, offSetFR);
+    RLModule = new SRF_Swerve_Module(2,17, 18, drivekP, drivekI, drivekD, offSetRL);
+    RRModule = new SRF_Swerve_Module(3,15, 16, drivekP, drivekI, drivekD, offSetRR);
 
     driveBase = new SRF_Swerve_Drive(FLModule, FRModule, RLModule, RRModule, 25.0, 21.0, 32.65);
 
@@ -186,10 +195,10 @@ public class Robot extends TimedRobot {
     // hookLift = new TalonSRX(13);
     
     //Ball Manipulating initialization
-    falcon = new TalonFX(19);
+    
 
-    intakeMotor = new VictorSPX(12);
-    indexMotor = new TalonSRX(11);
+    intakeMotor = new VictorSPX(8);
+    indexMotor = new TalonSRX(9);
     
     shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
@@ -268,6 +277,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("time", tim.get());
     gyroRange=10;
     gyroAngle=navx.getAngle();
+    driveBase.set(0.0, 0.1, 0.0);
      //the first line checks to see if we have to cross over 0
     //the second line is checking to see if the gyroangle is between 135 degrees to the right and 145 degrees to the right
     //if it isnt it rotates the robot clockwise until it is inbetween
@@ -285,7 +295,7 @@ public class Robot extends TimedRobot {
     //   }else{
     //     driveBase.set(0,0,0.05);
     //   } 
-    driveBase.set(0,0.1,0);
+    //timer based system
     // if(timStart == false) {
     //       tim.start();
     //       timStart = true;
@@ -327,6 +337,11 @@ public class Robot extends TimedRobot {
     backspinSpeed=0.0;
     indexSensorValue1=indexSensor1.get();
     
+    SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition());
+
     x = controller.getRawAxis(0);
     y = controller.getRawAxis(1);
     w = controller.getRawAxis(5);
@@ -419,7 +434,9 @@ public class Robot extends TimedRobot {
         intakeMotor.set(ControlMode.PercentOutput, 1);
       }
       SmartDashboard.putNumber("pickupcounter", pickupCounter);
-    
+      
+      
+
       //resetting field orient
       if(controller.getRawButton(rightOptionButton) && letUpRightOptions) {
           zeroYaw = navx.getAngle() % 360;
@@ -469,12 +486,12 @@ public class Robot extends TimedRobot {
           indexTimerToggle=true;
         }
         if(indexTimer.get()<1&&indexTimer.get()>0.01){
-          falcon.set(ControlMode.PercentOutput, 0.5);  
+          //falcon.set(ControlMode.PercentOutput, 0.5);  
         }else{
           indexTimerToggle=false;
           indexMotorToggle=false;
           indexTimer.reset();
-          falcon.set(ControlMode.PercentOutput,0.0);
+          //falcon.set(ControlMode.PercentOutput,0.0);
         }
       }
       

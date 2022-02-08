@@ -39,10 +39,10 @@ public class SRF_Swerve_Module {
 
     public SRF_Swerve_Module(int encoderID,int rotID, int driveID, double P, double I, double D, int offset) {
         encoder = new AnalogInput(encoderID);
-        SmartDashboard.putNumber("encoder", encoder.getVoltage());
+        //SmartDashboard.putNumber("encoder", encoder.getVoltage());
         rotationMotor = new TalonFX(rotID);
         
-        rotationMotor.setNeutralMode(NeutralMode.Coast);
+        rotationMotor.setNeutralMode(NeutralMode.Brake);
         rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
         rotationMotor.config_kP(0, P);
         rotationMotor.config_kI(0, I);
@@ -52,7 +52,6 @@ public class SRF_Swerve_Module {
         
         speedMotor.setNeutralMode(NeutralMode.Coast);
         speedMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 0);
-        
         speedMotor.config_kP(0,speedP);
         speedMotor.config_kI(0,speedI);
         speedMotor.config_kD(0,speedD);
@@ -82,34 +81,34 @@ public class SRF_Swerve_Module {
 
     public void set(double angle, double speed) {
         
-        SmartDashboard.putNumber("angle", angle);
-        
+        //SmartDashboard.putNumber("angle", angle);
+        SmartDashboard.putNumber(("encoder"+encoder),rotationMotor.getSelectedSensorPosition());
         int currentAngle = (rotationMotor.getSelectedSensorPosition());
         double distanceBetween;
         int sign = 1;
         double gearratio=12.8;
         
-        SmartDashboard.putNumber("currentangle1", currentAngle%26214);
+        //SmartDashboard.putNumber("currentangle1", currentAngle%26214);
         currentAngle %= (countsPerRev*gearratio);
         
         if(angle < 0){
             currentAngle += (countsPerRev*gearratio);
         }    
-        SmartDashboard.putNumber("% counts/Rev", currentAngle);
+        //SmartDashboard.putNumber("% counts/Rev", currentAngle);
 
         angle = (angle/360*-1)*(2048*gearratio);
         angle += zeroOffset;
-        SmartDashboard.putNumber("angle before adding",angle);
+        //SmartDashboard.putNumber("angle before adding",angle);
         if(angle < 0){
             //angle += (countsPerRev*gearratio);
         }
-        SmartDashboard.putNumber("Angle in Rev", angle);
+        //SmartDashboard.putNumber("Angle in Rev", angle);
         
         distanceBetween = angle - currentAngle;
-        SmartDashboard.putNumber("FirstDistBetween", distanceBetween);
+        //SmartDashboard.putNumber("FirstDistBetween", distanceBetween);
         if(distanceBetween < 0)
             distanceBetween += (countsPerRev*gearratio);
-        SmartDashboard.putNumber("Init DistBetween", distanceBetween);
+        //SmartDashboard.putNumber("Init DistBetween", distanceBetween);
         
         if(distanceBetween > ((countsPerRev*gearratio) - distanceBetween)) {
             distanceBetween = (countsPerRev*gearratio) - distanceBetween;
@@ -125,7 +124,7 @@ public class SRF_Swerve_Module {
         }
 
         
-
+        //reduces deadzones a little
         if(speed==0){
             
         }else if(speed>0){
@@ -134,18 +133,18 @@ public class SRF_Swerve_Module {
             speed-=0.056;
         }
         
-        SmartDashboard.putNumber("speed", speed);
+        //SmartDashboard.putNumber("speed", speed);
 
         if(Math.abs(distanceBetween) > (10*gearratio)){    
         rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + distanceBetween* sign);
         }
         
         //speedPID.setReference(speed, ControlType.kDutyCycle);
-        SmartDashboard.putNumber("sign", sign);
-        SmartDashboard.putNumber("Value", rotationMotor.getSelectedSensorPosition() + distanceBetween * sign);
-        //speedMotor.set(ControlMode.PercentOutput, speed);
-        SmartDashboard.putNumber("Distance Between", distanceBetween);
-        SmartDashboard.putNumber("MotorPosition",rotationMotor.getSelectedSensorPosition());
+        //SmartDashboard.putNumber("sign", sign);
+        //SmartDashboard.putNumber("Value", rotationMotor.getSelectedSensorPosition() + distanceBetween * sign);
+        speedMotor.set(ControlMode.PercentOutput, speed*0.5);
+        //SmartDashboard.putNumber("Distance Between", distanceBetween);
+        //SmartDashboard.putNumber("MotorPosition",rotationMotor.getSelectedSensorPosition());
         PIDTarget = rotationMotor.getSelectedSensorPosition() - distanceBetween;
         
     }
