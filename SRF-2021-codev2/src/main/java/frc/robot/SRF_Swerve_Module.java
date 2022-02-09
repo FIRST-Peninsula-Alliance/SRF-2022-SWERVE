@@ -32,14 +32,14 @@ public class SRF_Swerve_Module {
     //CANPIDController speedPID;
     
     double speedP = 5e-5, speedI = 1e-6, speedD = 0;
-    int zeroOffset;
+    double zeroOffset;
     final int countsPerRev = 2048;
 
     private double PIDTarget;
 
-    public SRF_Swerve_Module(int encoderID,int rotID, int driveID, double P, double I, double D, int offset) {
+    public SRF_Swerve_Module(int encoderID,int rotID, int driveID, double P, double I, double D, double offset) {
         encoder = new AnalogInput(encoderID);
-        //SmartDashboard.putNumber("encoder", encoder.getVoltage());
+        
         rotationMotor = new TalonFX(rotID);
         
         rotationMotor.setNeutralMode(NeutralMode.Brake);
@@ -75,14 +75,22 @@ public class SRF_Swerve_Module {
         // speedPID.setP(speedP);
         // speedPID.setI(speedI);
         // speedPID.setD(speedD);
-
+        //the 12.8 is the gear ratio modify if changes
         zeroOffset = offset;
+        rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + Math.abs((encoder.getVoltage()-zeroOffset)*26214.4));
+        
+
+
+
     }
 
     public void set(double angle, double speed) {
-        
+        SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
+        SmartDashboard.updateValues();
+
+
         //SmartDashboard.putNumber("angle", angle);
-        SmartDashboard.putNumber(("encoder"+encoder),rotationMotor.getSelectedSensorPosition());
+        //SmartDashboard.putNumber(("encoder"+encoder),rotationMotor.getSelectedSensorPosition());
         int currentAngle = (rotationMotor.getSelectedSensorPosition());
         double distanceBetween;
         int sign = 1;
@@ -100,7 +108,7 @@ public class SRF_Swerve_Module {
         angle += zeroOffset;
         //SmartDashboard.putNumber("angle before adding",angle);
         if(angle < 0){
-            //angle += (countsPerRev*gearratio);
+            angle += (countsPerRev*gearratio);
         }
         //SmartDashboard.putNumber("Angle in Rev", angle);
         

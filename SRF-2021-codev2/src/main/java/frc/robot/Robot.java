@@ -122,10 +122,11 @@ public class Robot extends TimedRobot {
   int pickupCounter;
 
   //PIDVALUES
+  //drivekp was 0.55
   final double drivekP = 0.55, drivekI = 0, drivekD = 0;
   final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
   final double backspinkP=0.00025, backspinkI=0.00000027, backspinkD=0;
-
+//bruh
   //Joystick values for swerve drive
   double x, y, w;
 
@@ -151,7 +152,7 @@ public class Robot extends TimedRobot {
   Boolean slowMode = false, unjam = false;
   int carouselStartPos;
   //0 -17 20 17
-  final int offSetFL = 0, offSetFR = 0, offSetRL = 0, offSetRR = 0;
+  final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
   //Tim's Room
   boolean timStart = false;
@@ -186,6 +187,7 @@ public class Robot extends TimedRobot {
     FRModule = new SRF_Swerve_Module(1,13, 14, drivekP, drivekI, drivekD, offSetFR);
     RLModule = new SRF_Swerve_Module(2,17, 18, drivekP, drivekI, drivekD, offSetRL);
     RRModule = new SRF_Swerve_Module(3,15, 16, drivekP, drivekI, drivekD, offSetRR);
+    
 
     driveBase = new SRF_Swerve_Drive(FLModule, FRModule, RLModule, RRModule, 25.0, 21.0, 32.65);
 
@@ -344,7 +346,7 @@ public class Robot extends TimedRobot {
 
     x = controller.getRawAxis(0);
     y = controller.getRawAxis(1);
-    w = controller.getRawAxis(5);
+    w = controller.getRawAxis(4);
     gyroAngle = navx.getAngle() - zeroYaw;
     gyroAngle %= 360;
 
