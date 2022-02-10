@@ -76,8 +76,23 @@ public class SRF_Swerve_Module {
         // speedPID.setI(speedI);
         // speedPID.setD(speedD);
         //the 12.8 is the gear ratio modify if changes
-        zeroOffset = offset;
-        rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + Math.abs((encoder.getVoltage()-zeroOffset)*26214.4));
+        //this value exists cause the if statment would not take math.abs
+        double offsetDifference;
+        
+        offsetDifference=offset-encoder.getVoltage();
+        if(Math.abs(offsetDifference)>2.5){
+            if(offsetDifference>0){
+            offsetDifference=-5+offsetDifference;
+            }else if(offsetDifference<0){
+                offsetDifference=5-Math.abs(offsetDifference);
+            }
+        }
+        SmartDashboard.putNumber("offset"+encoderID, offset);
+        SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
+        SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
+        zeroOffset=offsetDifference;
+        //zeroOffset=Math.abs(offset-encoder.getVoltage());
+        //rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + Math.abs((encoder.getVoltage()-zeroOffset)*26214.4));
         
 
 
@@ -86,7 +101,7 @@ public class SRF_Swerve_Module {
 
     public void set(double angle, double speed) {
         SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
-        SmartDashboard.updateValues();
+        //SmartDashboard.updateValues();
 
 
         //SmartDashboard.putNumber("angle", angle);
@@ -105,7 +120,7 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("% counts/Rev", currentAngle);
 
         angle = (angle/360*-1)*(2048*gearratio);
-        angle += zeroOffset;
+        //angle += (zeroOffset*(5400));
         //SmartDashboard.putNumber("angle before adding",angle);
         if(angle < 0){
             angle += (countsPerRev*gearratio);
@@ -142,9 +157,10 @@ public class SRF_Swerve_Module {
         }
         
         //SmartDashboard.putNumber("speed", speed);
-
+        SmartDashboard.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
         if(Math.abs(distanceBetween) > (10*gearratio)){    
-        rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + distanceBetween* sign);
+            SmartDashboard.putNumber("valuetospinto"+encoder.getChannel(),(rotationMotor.getSelectedSensorPosition()+(zeroOffset*5400)) + distanceBetween* sign );
+            rotationMotor.set(ControlMode.Position, ((rotationMotor.getSelectedSensorPosition()+(zeroOffset*5400)) + distanceBetween* sign ));
         }
         
         //speedPID.setReference(speed, ControlType.kDutyCycle);

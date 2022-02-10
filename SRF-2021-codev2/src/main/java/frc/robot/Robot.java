@@ -162,7 +162,7 @@ public class Robot extends TimedRobot {
   DigitalInput indexSensor1= new DigitalInput(0);
   //UsbCamera cam;
   //fixme
-  boolean fieldOriented = false;
+  boolean fieldOriented = true;
 
   int dashboardDelay = 0;
 
@@ -342,7 +342,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
-    SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition()%26214);
 
     x = controller.getRawAxis(0);
     y = controller.getRawAxis(1);
@@ -561,12 +561,12 @@ public class Robot extends TimedRobot {
     if(rightTrigger){
       //shooterSpeed=2000.0;
       backspinSpeed=4000.0;
-      SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+      //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
     }else if(!rightTrigger){
       letUpRightTrigger=true;;
     }
-    SmartDashboard.putBoolean("letupright", letUpRightTrigger);
+    //SmartDashboard.putBoolean("letupright", letUpRightTrigger);
     //shooter warmup other code
     // if(RightTrigger){
     //   shooterMotor.set(1);
