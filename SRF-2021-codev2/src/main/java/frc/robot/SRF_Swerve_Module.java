@@ -122,8 +122,10 @@ public class SRF_Swerve_Module {
         angle = (angle/360*-1)*(2048*gearratio);
         //angle += (zeroOffset*(5400));
         //SmartDashboard.putNumber("angle before adding",angle);
+        
         if(angle < 0){
             angle += (countsPerRev*gearratio);
+            //angle += zeroOffset*5242.88;
         }
         //SmartDashboard.putNumber("Angle in Rev", angle);
         
@@ -159,8 +161,8 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("speed", speed);
         SmartDashboard.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
         if(Math.abs(distanceBetween) > (10*gearratio)){    
-            SmartDashboard.putNumber("valuetospinto"+encoder.getChannel(),(rotationMotor.getSelectedSensorPosition()+(zeroOffset*5400)) + distanceBetween* sign );
-            rotationMotor.set(ControlMode.Position, ((rotationMotor.getSelectedSensorPosition()+(zeroOffset*5400)) + distanceBetween* sign ));
+            SmartDashboard.putNumber("valuetospinto"+encoder.getChannel(),(rotationMotor.getSelectedSensorPosition()+(zeroOffset*5242.88)) + distanceBetween* sign );
+            rotationMotor.set(ControlMode.Position, ((rotationMotor.getSelectedSensorPosition()+(zeroOffset*5242.88)) + distanceBetween* sign ));
         }
         
         //speedPID.setReference(speed, ControlType.kDutyCycle);
