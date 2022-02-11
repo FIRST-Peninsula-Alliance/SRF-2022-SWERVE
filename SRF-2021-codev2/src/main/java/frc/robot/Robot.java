@@ -149,7 +149,7 @@ public class Robot extends TimedRobot {
   Double outtakeSpeed, shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
-  Boolean slowMode = false, unjam = false;
+  Boolean slowMode = true, unjam = false;
   int carouselStartPos;
   //0 -17 20 17
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
@@ -380,9 +380,10 @@ public class Robot extends TimedRobot {
     y *= Math.abs(y);
     w *= Math.abs(w);
 
+    //FIXME
     if(slowMode) {
-      x *= .5;
-      y *= .5;
+      x *= .25;
+      y *= .25;
     }
 
     indexSensorValue1=indexSensor1.get();

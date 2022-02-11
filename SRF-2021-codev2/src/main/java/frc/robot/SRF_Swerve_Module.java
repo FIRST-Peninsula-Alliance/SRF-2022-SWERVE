@@ -50,7 +50,7 @@ public class SRF_Swerve_Module {
         
         speedMotor = new TalonFX(driveID);
         
-        speedMotor.setNeutralMode(NeutralMode.Coast);
+        speedMotor.setNeutralMode(NeutralMode.Brake);
         speedMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 0);
         speedMotor.config_kP(0,speedP);
         speedMotor.config_kI(0,speedI);
@@ -120,12 +120,13 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("% counts/Rev", currentAngle);
 
         angle = (angle/360*-1)*(2048*gearratio);
-        //angle += (zeroOffset*(5400));
+        SmartDashboard.putNumber("differnecebetween"+encoder.getChannel(), (rotationMotor.getSelectedSensorPosition()%26214.4)-(rotationMotor.getSelectedSensorPosition()-angle));
+        angle += (zeroOffset*(5242.88));
+        //multipied by 5400
         //SmartDashboard.putNumber("angle before adding",angle);
         
         if(angle < 0){
             angle += (countsPerRev*gearratio);
-            //angle += zeroOffset*5242.88;
         }
         //SmartDashboard.putNumber("Angle in Rev", angle);
         
@@ -161,8 +162,7 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("speed", speed);
         SmartDashboard.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
         if(Math.abs(distanceBetween) > (10*gearratio)){    
-            SmartDashboard.putNumber("valuetospinto"+encoder.getChannel(),(rotationMotor.getSelectedSensorPosition()+(zeroOffset*5242.88)) + distanceBetween* sign );
-            rotationMotor.set(ControlMode.Position, ((rotationMotor.getSelectedSensorPosition()+(zeroOffset*5242.88)) + distanceBetween* sign ));
+            rotationMotor.set(ControlMode.Position, (rotationMotor.getSelectedSensorPosition() + distanceBetween* sign ));
         }
         
         //speedPID.setReference(speed, ControlType.kDutyCycle);
