@@ -159,9 +159,10 @@ public class Robot extends TimedRobot {
   Timer tim = new Timer();
   Timer indexTimer = new Timer();
   Timer match = new Timer();
-  DigitalInput indexSensor1= new DigitalInput(0);
+  DigitalInput indexSensor1 = new DigitalInput(0);
+  DigitalInput indexSensor2 = new DigitalInput(1);
   //UsbCamera cam;
-  //fixme
+  //FIXME
   boolean fieldOriented = true;
 
   int dashboardDelay = 0;
@@ -338,6 +339,7 @@ public class Robot extends TimedRobot {
     outtakeSpeed = 0.0;
     backspinSpeed=0.0;
     indexSensorValue1=indexSensor1.get();
+    indexSensorValue2=indexSensor2.get();
     
     SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
@@ -379,6 +381,7 @@ public class Robot extends TimedRobot {
     x *= Math.abs(x);
     y *= Math.abs(y);
     w *= Math.abs(w);
+    
 
     //FIXME
     if(slowMode) {
@@ -386,7 +389,7 @@ public class Robot extends TimedRobot {
       y *= .25;
     }
 
-    indexSensorValue1=indexSensor1.get();
+    
     
     //w * 0.7 limits rotational speed
     if(fieldOriented)
@@ -408,20 +411,21 @@ public class Robot extends TimedRobot {
     }
     SmartDashboard.putBoolean("rightTrigger", rightTrigger);
     
+
+    //controller code starts here
+
+
     //pickup motor code
     if((leftTrigger==true) && letUpLeftTrigger) {
-      //falcon.set(ControlMode.PercentOutput, 0.5);
       intakeMotor.set(ControlMode.PercentOutput, 1);
       pickupCounter=0;
-        letUpLeftTrigger = false;
+      letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
-          //falcon.set(ControlMode.PercentOutput, 0.5);
           intakeMotor.set(ControlMode.PercentOutput, 1);
           pickupCounter++;
         }else{
-          //falcon.set(ControlMode.PercentOutput, 0.0);
           intakeMotor.set(ControlMode.PercentOutput, 1);
         }   
       }else if((controller.getRawButton(B))){
@@ -433,7 +437,6 @@ public class Robot extends TimedRobot {
         pickupCounter++;
       }
       if(pickupCounter>25){
-        //falcon.set(ControlMode.PercentOutput, 0.0);
         intakeMotor.set(ControlMode.PercentOutput, 1);
       }
       SmartDashboard.putNumber("pickupcounter", pickupCounter);
@@ -488,7 +491,7 @@ public class Robot extends TimedRobot {
           indexTimer.start();
           indexTimerToggle=true;
         }
-        if(indexTimer.get()<1&&indexTimer.get()>0.01){
+        if(indexTimer.get()<0.15&&indexTimer.get()>0.01){
           //falcon.set(ControlMode.PercentOutput, 0.5);  
         }else{
           indexTimerToggle=false;
@@ -523,11 +526,12 @@ public class Robot extends TimedRobot {
     }
   
     //Outtake Function
-    if((controller.getRawButton(B))){
-      intakeMotor.set(ControlMode.PercentOutput, -1);
-     }else{
-      intakeMotor.set(ControlMode.PercentOutput, 0);
-     }
+    //FIXME
+    // if((controller.getRawButton(B))){
+    //   intakeMotor.set(ControlMode.PercentOutput, -1);
+    //  }else{
+    //   intakeMotor.set(ControlMode.PercentOutput, 0);
+    //  }
 
      //FIXME this needs to be switched off right bumper
      //flap code
@@ -567,15 +571,7 @@ public class Robot extends TimedRobot {
     }else if(!rightTrigger){
       letUpRightTrigger=true;;
     }
-    //SmartDashboard.putBoolean("letupright", letUpRightTrigger);
-    //shooter warmup other code
-    // if(RightTrigger){
-    //   shooterMotor.set(1);
-    //   backspinMotor.set(0.5);      
-    // }else{
-    //   shooterMotor.set(0);
-    //   backspinMotor.set(0);
-    // }
+    
     //FIXME for comp code
     //if(Timer.getMatchTime() <= 30){
       SmartDashboard.putNumber("velocityofbackspin", backspinEncoder.getVelocity());
