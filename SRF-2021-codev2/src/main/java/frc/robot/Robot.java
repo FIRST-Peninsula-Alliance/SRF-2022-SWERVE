@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -133,17 +134,25 @@ public class Robot extends TimedRobot {
   double zeroYaw, gyroAngle, gyroStartAngle,gyroTargetAngle,gyroRange;
   
   boolean testRotationController = true;
+  
+
 
   //Index Sensor Booleans
   Boolean indexSensorValue1=false;
   Boolean indexSensorValue2=false;
   Boolean indexMotorToggle=false;
   Boolean indexTimerToggle=false;
+  Boolean indexTargetSwitch=false;
+
+  double indexEncoderCounts;
+  double indexDistanceBetween;
+  double indexTargetCounts;
+  
   //these are used to check if the joystick is giving out a command because they are no longer on a button but instead an axis
   Boolean leftTrigger=false, rightTrigger=false;
 
   //these are to check if you let go of the button
-  Boolean letUpB = true, letUpX = true, letUpY=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
+  Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
   Double outtakeSpeed, shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
@@ -200,9 +209,20 @@ public class Robot extends TimedRobot {
     //Ball Manipulating initialization
     
 
-    intakeMotor = new VictorSPX(8);
-    indexMotor = new TalonSRX(9);
+    intakeMotor = new VictorSPX(7);
+    indexMotor = new TalonSRX(8);
+    indexMotor.configNominalOutputForward(0, 0);
+		indexMotor.configNominalOutputReverse(0, 0);
+		indexMotor.configPeakOutputForward(0.25, 0);
+		indexMotor.configPeakOutputReverse(-0.25, 0);
+    indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+    indexMotor.config_kP(0, 0.01, 0);
+    indexMotor.config_kI(0, 0, 0);
+    indexMotor.config_kD(0, 0, 0);
     
+
+
+
     shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
     shooterPID = new CANPIDController(shooterMotor);
@@ -330,6 +350,7 @@ public class Robot extends TimedRobot {
     hoodSolenoid.set(Value.kReverse);
     shooterSpeedTemp=4600.0;
     backspinSpeedTemp=2300.0;
+    indexTargetCounts=indexMotor.getSelectedSensorPosition();
     
   }
 
@@ -478,29 +499,38 @@ public class Robot extends TimedRobot {
       //index sensors
       //switch indexsensorvalue2 to true once you have sensor
       if(indexSensorValue2==false){
-        if(indexSensorValue1==false){
-          if(indexMotorToggle==false){
-            indexMotorToggle=true;
-          }
+        if(indexSensorValue1==true){
+          if(indexTargetSwitch==false){
+            indexTargetCounts=indexMotor.getSelectedSensorPosition()+2048;
         }
       }
+      //2048 is the amount of rotations is has to do, not tuned
       
-      //index motor activation
-      if(indexMotorToggle==true){
-        if(indexTimerToggle==false){
-          indexTimer.start();
-          indexTimerToggle=true;
-        }
-        if(indexTimer.get()<0.15&&indexTimer.get()>0.01){
-          //falcon.set(ControlMode.PercentOutput, 0.5);  
-        }else{
-          indexTimerToggle=false;
-          indexMotorToggle=false;
-          indexTimer.reset();
-          //falcon.set(ControlMode.PercentOutput,0.0);
-        }
-      }
-      
+      // //index motor activation
+      // if(indexMotorToggle==true){
+      //   if(indexTimerToggle==false){
+      //     indexTimer.start();
+      //     indexTimerToggle=true;
+      //   }
+      //   if(indexTimer.get()<0.15&&indexTimer.get()>0.01){
+      //     indexMotor.set(ControlMode.PercentOutput, 0.5);
+      //     //falcon.set(ControlMode.PercentOutput, 0.5);  
+      //   }else{
+      //     indexTimerToggle=false;
+      //     indexMotorToggle=false;
+      //     indexTimer.reset();
+      //     //falcon.set(ControlMode.PercentOutput,0.0);
+      //   }
+      // }
+        
+    if(indexMotor.getSelectedSensorPosition()!=indexTargetCounts-10||indexMotor.getSelectedSensorPosition()!=indexTargetCounts+10){
+      indexTargetSwitch=true;
+      indexMotor.set(ControlMode.Position, indexTargetCounts);
+    }else{
+      indexTargetSwitch=false;
+    }
+
+
     //Hood
     if(controller.getRawButtonPressed(Y) && letUpY)
     {
@@ -556,15 +586,18 @@ public class Robot extends TimedRobot {
     // }
 
     
+
     //Shooter function
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800&&backspinEncoder.getVelocity()>1400){
-      indexMotorToggle=true;
-      indexTimer.reset();
+      //make this so it only does this once
+      //FIXME
+      indexTargetCounts+=1024;
+      //1024 is the amount of counts it needs to mode, not tuned
     }   
     //FIXME only use one of the shooter code
     //shooter warmup
     if(rightTrigger){
-      //shooterSpeed=2000.0;
+      shooterSpeed=4000.0;
       backspinSpeed=4000.0;
       //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
@@ -599,6 +632,13 @@ public class Robot extends TimedRobot {
     //     letUpBack = true;
     //     falcon.set(ControlMode.PercentOutput, 0.0);
     //   }
+
+    if(controller.getRawButton(A) && letUpA) {
+      indexTargetCounts+=2048;
+        letUpA = false;
+      } else if(!controller.getRawButton(leftBumper) && !letUpA) {
+        letUpA = true;
+      }
 
      
       
@@ -696,6 +736,8 @@ public class Robot extends TimedRobot {
       dashboardDelay = 0;
     }
     dashboardDelay++;
+  }
+
   }
 
   @Override
