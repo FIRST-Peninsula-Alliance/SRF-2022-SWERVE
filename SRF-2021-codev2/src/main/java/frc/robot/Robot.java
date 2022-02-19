@@ -141,7 +141,7 @@ public class Robot extends TimedRobot {
   Boolean indexSensorValue1=false;
   Boolean indexSensorValue2=false;
   Boolean indexMotorToggle=false;
-  Boolean indexTimerToggle=false;
+  Boolean indexShootToggle=false;
   Boolean indexTargetSwitch=false;
 
   double indexEncoderCounts;
@@ -216,7 +216,7 @@ public class Robot extends TimedRobot {
 		indexMotor.configPeakOutputForward(0.25, 0);
 		indexMotor.configPeakOutputReverse(-0.25, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
-    indexMotor.config_kP(0, 0.01, 0);
+    indexMotor.config_kP(0, 0.95, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
@@ -351,7 +351,7 @@ public class Robot extends TimedRobot {
     shooterSpeedTemp=4600.0;
     backspinSpeedTemp=2300.0;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    
+    indexShootToggle=false;
   }
 
   @Override
@@ -366,6 +366,13 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition()%26214);
+    SmartDashboard.putNumber("IndexMotorEncoder", indexMotor.getSelectedSensorPosition());
+    SmartDashboard.putNumber("IndexTargetCounts", indexTargetCounts);
+    SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
+    SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
+      SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
+      SmartDashboard.putBoolean("IndexTargetSwitch", indexTargetSwitch);
+
 
     x = controller.getRawAxis(0);
     y = controller.getRawAxis(1);
@@ -425,6 +432,7 @@ public class Robot extends TimedRobot {
       leftTrigger=false;
     }
     SmartDashboard.putBoolean("leftTrigger", leftTrigger);
+    
     if((Math.abs(controller.getRawAxis(3))>0.05)){
       rightTrigger=true;
     }else{
@@ -461,7 +469,7 @@ public class Robot extends TimedRobot {
         intakeMotor.set(ControlMode.PercentOutput, 1);
       }
       SmartDashboard.putNumber("pickupcounter", pickupCounter);
-      
+       
       
 
       //resetting field orient
@@ -498,12 +506,15 @@ public class Robot extends TimedRobot {
   
       //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==false){
-        if(indexSensorValue1==true){
+      if(indexSensorValue2==true){
+        if(indexSensorValue1==false){
           if(indexTargetSwitch==false){
-            indexTargetCounts=indexMotor.getSelectedSensorPosition()+2048;
+            indexTargetSwitch=true;
+            indexTargetCounts=indexMotor.getSelectedSensorPosition()+40960;
         }
       }
+    } 
+      
       //2048 is the amount of rotations is has to do, not tuned
       
       // //index motor activation
@@ -523,14 +534,13 @@ public class Robot extends TimedRobot {
       //   }
       // }
         
-    if(indexMotor.getSelectedSensorPosition()!=indexTargetCounts-10||indexMotor.getSelectedSensorPosition()!=indexTargetCounts+10){
-      indexTargetSwitch=true;
+    if(Math.abs(indexTargetCounts-indexMotor.getSelectedSensorPosition())>300){
       indexMotor.set(ControlMode.Position, indexTargetCounts);
     }else{
       indexTargetSwitch=false;
-    }
-
-
+      System.out.println("help");
+    } 
+    SmartDashboard.putNumber("indexdifference", Math.abs(indexTargetCounts-indexMotor.getSelectedSensorPosition()));
     //Hood
     if(controller.getRawButtonPressed(Y) && letUpY)
     {
@@ -584,14 +594,18 @@ public class Robot extends TimedRobot {
     //   flapSolenoid.set(Value.kForward);
     //   flapDown=false;
     // }
-
     
-
+    
+    
     //Shooter function
     if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800&&backspinEncoder.getVelocity()>1400){
-      //make this so it only does this once
-      //FIXME
-      indexTargetCounts+=1024;
+      //the if statment makes sure it only does this once until the next ball shoots
+      if(indexShootToggle==false){
+        indexShootToggle=true;
+        indexTargetCounts+=10240;
+      }else{
+        indexShootToggle=false;
+      }
       //1024 is the amount of counts it needs to mode, not tuned
     }   
     //FIXME only use one of the shooter code
@@ -634,12 +648,12 @@ public class Robot extends TimedRobot {
     //   }
 
     if(controller.getRawButton(A) && letUpA) {
-      indexTargetCounts+=2048;
+      indexTargetCounts+=20480;
         letUpA = false;
-      } else if(!controller.getRawButton(leftBumper) && !letUpA) {
+      } else if(!controller.getRawButton(A) && !letUpA) {
         letUpA = true;
       }
-
+      SmartDashboard.putBoolean("letupA", letUpA);
      
       
    
@@ -738,7 +752,7 @@ public class Robot extends TimedRobot {
     dashboardDelay++;
   }
 
-  }
+  
 
   @Override
   public void testInit() {

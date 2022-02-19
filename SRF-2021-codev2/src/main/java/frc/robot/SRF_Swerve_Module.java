@@ -48,6 +48,7 @@ public class SRF_Swerve_Module {
         rotationMotor.config_kI(0, I);
         rotationMotor.config_kD(0, D);
         
+        
         speedMotor = new TalonFX(driveID);
         
         speedMotor.setNeutralMode(NeutralMode.Brake);
@@ -87,9 +88,9 @@ public class SRF_Swerve_Module {
                 offsetDifference=5-Math.abs(offsetDifference);
             }
         }
-        SmartDashboard.putNumber("offset"+encoderID, offset);
-        SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
-        SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
+        //SmartDashboard.putNumber("offset"+encoderID, offset);
+        //SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
+        //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
         zeroOffset=offsetDifference;
         //zeroOffset=Math.abs(offset-encoder.getVoltage());
         //rotationMotor.set(ControlMode.Position, rotationMotor.getSelectedSensorPosition() + Math.abs((encoder.getVoltage()-zeroOffset)*26214.4));
@@ -100,7 +101,7 @@ public class SRF_Swerve_Module {
     }
 
     public void set(double angle, double speed) {
-        SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
+        //SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
         //SmartDashboard.updateValues();
 
 
@@ -120,7 +121,7 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("% counts/Rev", currentAngle);
 
         angle = (angle/360*-1)*(2048*gearratio);
-        SmartDashboard.putNumber("differnecebetween"+encoder.getChannel(), (rotationMotor.getSelectedSensorPosition()%26214.4)-(rotationMotor.getSelectedSensorPosition()-angle));
+        //SmartDashboard.putNumber("differnecebetween"+encoder.getChannel(), (rotationMotor.getSelectedSensorPosition()%26214.4)-(rotationMotor.getSelectedSensorPosition()-angle));
         angle += (zeroOffset*(5242.88));
         //multipied by 5400
         //SmartDashboard.putNumber("angle before adding",angle);
@@ -160,7 +161,7 @@ public class SRF_Swerve_Module {
         }
         
         //SmartDashboard.putNumber("speed", speed);
-        SmartDashboard.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
+        //d.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
         if(Math.abs(distanceBetween) > (10*gearratio)){    
             rotationMotor.set(ControlMode.Position, (rotationMotor.getSelectedSensorPosition() + distanceBetween* sign ));
         }
