@@ -100,8 +100,7 @@ public class Robot extends TimedRobot {
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
   I2C wire = new I2C(Port.kOnboard, 0x0);
-
-  //ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
+  ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
 
   //Pneumatics
   DoubleSolenoid pickupSolenoid;
@@ -436,6 +435,28 @@ public class Robot extends TimedRobot {
     }
     SmartDashboard.putBoolean("rightTrigger", rightTrigger);
     
+
+    //color sensor and prox code
+    Color detectedColor = colorSensor.getColor();
+    double IR = colorSensor.getIR();
+
+    SmartDashboard.putNumber("Red", detectedColor.red);
+    SmartDashboard.putNumber("Green", detectedColor.green);
+    SmartDashboard.putNumber("Blue", detectedColor.blue);
+    SmartDashboard.putNumber("IR", IR);
+    int proximity = colorSensor.getProximity();
+
+    SmartDashboard.putNumber("Proximity", proximity);
+
+
+
+
+
+
+
+
+
+
 
     //controller code starts here
 
