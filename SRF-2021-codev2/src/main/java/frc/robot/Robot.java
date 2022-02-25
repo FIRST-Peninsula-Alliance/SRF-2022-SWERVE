@@ -27,12 +27,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.I2C.Port;
-import edu.wpi.first.wpilibj.networktables.*;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.smartdashboard.*;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
@@ -85,7 +80,7 @@ public class Robot extends TimedRobot {
   SRF_Swerve_Drive driveBase;
 
 
-  //FIXME old 2021 code update when new stuff
+  //FIXME CLIMER INIT
   //Climbing motors
   //TalonSRX winch1, winch2, hookLift;
   
@@ -95,7 +90,7 @@ public class Robot extends TimedRobot {
   //TalonFX falcon;
 
   TalonSRX indexMotor;
-  VictorSPX intakeMotor;
+  TalonSRX intakeMotor;
   CANSparkMax shooterMotor, backspinMotor;
 
   CANPIDController shooterPID,backspinPID;
@@ -171,7 +166,7 @@ public class Robot extends TimedRobot {
   DigitalInput indexSensor1 = new DigitalInput(0);
   DigitalInput indexSensor2 = new DigitalInput(1);
   //UsbCamera cam;
-  //FIXME
+  //FIXME FIELD ORIENT
   boolean fieldOriented = true;
 
   int dashboardDelay = 0;
@@ -209,14 +204,16 @@ public class Robot extends TimedRobot {
     //Ball Manipulating initialization
     
 
-    intakeMotor = new VictorSPX(7);
+    intakeMotor = new TalonSRX(7);
     indexMotor = new TalonSRX(8);
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
-		indexMotor.configPeakOutputForward(0.25, 0);
-		indexMotor.configPeakOutputReverse(-0.25, 0);
+		indexMotor.configPeakOutputForward(0.5, 0);
+		indexMotor.configPeakOutputReverse(-0.5, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
-    indexMotor.config_kP(0, 0.95, 0);
+    //was 0.35
+
+    indexMotor.config_kP(0, 0.35, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
@@ -300,7 +297,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("time", tim.get());
     gyroRange=10;
     gyroAngle=navx.getAngle();
-    driveBase.set(0.0, 0.1, 0.0);
+    
      //the first line checks to see if we have to cross over 0
     //the second line is checking to see if the gyroangle is between 135 degrees to the right and 145 degrees to the right
     //if it isnt it rotates the robot clockwise until it is inbetween
@@ -333,8 +330,6 @@ public class Robot extends TimedRobot {
     //   }else{
     //     driveBase.set(0,0,0.15);
     //   }
-      
-
     // }
     // if(tim.get()>7){
     //   driveBase.set(0,0,0);
@@ -352,6 +347,7 @@ public class Robot extends TimedRobot {
     backspinSpeedTemp=2300.0;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
     indexShootToggle=false;
+    pickupCounter=100;
   }
 
   @Override
@@ -411,7 +407,7 @@ public class Robot extends TimedRobot {
     w *= Math.abs(w);
     
 
-    //FIXME
+    //FIXME SLOW MODE
     if(slowMode) {
       x *= .25;
       y *= .25;
@@ -465,11 +461,11 @@ public class Robot extends TimedRobot {
       if(leftTrigger==false &&pickupCounter<100){
         pickupCounter++;
       }
-      if(pickupCounter>25){
+      if(pickupCounter<25){
         intakeMotor.set(ControlMode.PercentOutput, 1);
       }
       SmartDashboard.putNumber("pickupcounter", pickupCounter);
-       
+      
       
 
       //resetting field orient
@@ -515,32 +511,15 @@ public class Robot extends TimedRobot {
       }
     } 
       
-      //2048 is the amount of rotations is has to do, not tuned
       
-      // //index motor activation
-      // if(indexMotorToggle==true){
-      //   if(indexTimerToggle==false){
-      //     indexTimer.start();
-      //     indexTimerToggle=true;
-      //   }
-      //   if(indexTimer.get()<0.15&&indexTimer.get()>0.01){
-      //     indexMotor.set(ControlMode.PercentOutput, 0.5);
-      //     //falcon.set(ControlMode.PercentOutput, 0.5);  
-      //   }else{
-      //     indexTimerToggle=false;
-      //     indexMotorToggle=false;
-      //     indexTimer.reset();
-      //     //falcon.set(ControlMode.PercentOutput,0.0);
-      //   }
-      // }
         
-    if(Math.abs(indexTargetCounts-indexMotor.getSelectedSensorPosition())>300){
+    if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
       indexMotor.set(ControlMode.Position, indexTargetCounts);
     }else{
       indexTargetSwitch=false;
-      System.out.println("help");
+     
     } 
-    SmartDashboard.putNumber("indexdifference", Math.abs(indexTargetCounts-indexMotor.getSelectedSensorPosition()));
+    SmartDashboard.putNumber("indexdifference", Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition())));
     //Hood
     if(controller.getRawButtonPressed(Y) && letUpY)
     {
@@ -565,15 +544,15 @@ public class Robot extends TimedRobot {
       letUpPOV180 = true;
     }
   
-    //Outtake Function
-    //FIXME
+    
+    //FIXME Outtake Function
     // if((controller.getRawButton(B))){
     //   intakeMotor.set(ControlMode.PercentOutput, -1);
     //  }else{
     //   intakeMotor.set(ControlMode.PercentOutput, 0);
     //  }
 
-     //FIXME this needs to be switched off right bumper
+     //FIXME FLAP CODE, SWITCH OFF RIGHT BUMPER
      //flap code
     //  if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
     // {
@@ -608,11 +587,12 @@ public class Robot extends TimedRobot {
       }
       //1024 is the amount of counts it needs to mode, not tuned
     }   
-    //FIXME only use one of the shooter code
+    
     //shooter warmup
     if(rightTrigger){
-      shooterSpeed=4000.0;
-      backspinSpeed=4000.0;
+      shooterSpeed=-3050.0;
+      backspinSpeed=1500.0;
+      
       //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
       letUpRightTrigger=false;
     }else if(!rightTrigger){
@@ -648,7 +628,7 @@ public class Robot extends TimedRobot {
     //   }
 
     if(controller.getRawButton(A) && letUpA) {
-      indexTargetCounts+=20480;
+      indexTargetCounts-=124000;
         letUpA = false;
       } else if(!controller.getRawButton(A) && !letUpA) {
         letUpA = true;
