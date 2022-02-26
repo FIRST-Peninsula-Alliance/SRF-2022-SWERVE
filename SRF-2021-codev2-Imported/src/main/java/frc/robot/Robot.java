@@ -16,6 +16,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
+
 //import edu.wpi.first.cscore.UsbCamera;
 //import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -132,11 +133,16 @@ public class Robot extends TimedRobot {
   
   boolean testRotationController = true;
   
+  //1 is blue, 2 is red
+  int teamColor;
+  int sensorProximity;
+  //proximity switch is the value at which indexsensorvalue2 switched
+  int ProximitySwitch;
+  Boolean indexSensorValue2;
 
 
   //Index Sensor Booleans
-  Boolean indexSensorValue1=false;
-  Boolean indexSensorValue2=false;
+  Boolean indexSensorValue1=false;  
   Boolean indexMotorToggle=false;
   Boolean indexShootToggle=false;
   Boolean indexTargetSwitch=false;
@@ -241,13 +247,13 @@ public class Robot extends TimedRobot {
     backspinPID.setIMaxAccum(1.0, 0);
     backspinEncoder = backspinMotor.getEncoder();
     
-
-    arnold = new Compressor(0,PneumaticsModuleType.REVPH);
+    //FIXME First line only
+    //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
     //arnold.setClosedLoopControl(true);
     
 
-    pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
-    hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,6);
+    //pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
+    //hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,6);
     //FIXME stuff for flap
     //flapSolenoid = new DoubleSolenoid(0,0,0);
     
@@ -274,7 +280,8 @@ public class Robot extends TimedRobot {
      tim.stop();
      tim.reset();
 
-     hoodSolenoid.set(Value.kForward);
+     //FIXME
+     //hoodSolenoid.set(Value.kForward);
      shooterMotor.set(0);
      backspinMotor.set(0);
      
@@ -344,8 +351,9 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     letUpRBump = true;
     timStart = false;
-    pickupSolenoid.set(Value.kForward);
-    hoodSolenoid.set(Value.kReverse);
+    //FIXME
+    //pickupSolenoid.set(Value.kForward);
+    //hoodSolenoid.set(Value.kReverse);
     shooterSpeedTemp=4600.0;
     backspinSpeedTemp=2300.0;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
@@ -357,9 +365,10 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     shooterSpeed = 0.0;
     outtakeSpeed = 0.0;
-    backspinSpeed=0.0;
-    indexSensorValue1=indexSensor1.get();
-    indexSensorValue2=indexSensor2.get();
+    backspinSpeed = 0.0;
+    indexSensorValue1 = indexSensor1.get();
+    indexSensorValue2 = indexSensor2.get();
+    sensorProximity = colorSensor.getProximity();
     
     SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
@@ -452,7 +461,25 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Proximity", proximity);
 
-
+    //this is just switching the proximity value into a boolean for easy use
+    if(sensorProximity>ProximitySwitch){
+      indexSensorValue2=true;
+    }else{
+      indexSensorValue2=false;
+    }
+    //3826 is a place holder switch this value
+    //1 is blue, 2 is red
+    if(indexSensorValue2==true){
+      if(teamColor==1){
+        if(detectedColor.red>3826){
+          //activate motor at low velocity also do the index
+        }
+      }else if(teamColor==2){
+        if(detectedColor.blue>3826){
+          //activate motor at low velocity also do the index
+        }
+      }
+    }
 
 
 
