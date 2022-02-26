@@ -7,23 +7,21 @@
 
 package frc.robot;
 
-
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.ColorSensorV3;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-//import com.revrobotics.CANSparkMax.IdleMode;
+//import com.revrobotics.ColorSensorV3;
+import com.revrobotics.ControlType;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
-//import edu.wpi.cscore.UsbCamera;
+//import edu.wpi.first.cscore.UsbCamera;
 //import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -34,6 +32,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 /**
@@ -94,16 +93,15 @@ public class Robot extends TimedRobot {
   TalonSRX intakeMotor;
   CANSparkMax shooterMotor, backspinMotor;
 
-  
-  SparkMaxPIDController shooterPID,backspinPID;
-  RelativeEncoder shooterEncoder,backspinEncoder;
+  CANPIDController shooterPID,backspinPID;
+  CANEncoder shooterEncoder,backspinEncoder;
 
   AHRS navx;
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
   I2C wire = new I2C(Port.kOnboard, 0x0);
   ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
-  
+
   //Pneumatics
   DoubleSolenoid pickupSolenoid;
   DoubleSolenoid flapSolenoid;
@@ -213,6 +211,7 @@ public class Robot extends TimedRobot {
 		indexMotor.configPeakOutputReverse(-0.5, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
+
     indexMotor.config_kP(0, 0.35, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
@@ -221,23 +220,23 @@ public class Robot extends TimedRobot {
 
 
     shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
-    //shooterMotor.setIdleMode(IdleMode.kCoast);
-    //shooterPID = shooterMotor.getPIDController();
+    shooterMotor.setIdleMode(IdleMode.kCoast);
+    shooterPID = new CANPIDController(shooterMotor);
     shooterPID.setP(shootkP);
     shooterPID.setI(shootkI);
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
-    //shooterEncoder = shooterMotor.getEncoder();
+    shooterEncoder = new CANEncoder(shooterMotor);
     
 
     backspinMotor = new CANSparkMax(10, MotorType.kBrushless);
-    //backspinMotor.setIdleMode(IdleMode.kCoast);
-    //backspinPID = backspinMotor.getPIDController();
+    backspinMotor.setIdleMode(IdleMode.kCoast);
+    backspinPID = new CANPIDController(backspinMotor);
     backspinPID.setP(backspinkP);
     backspinPID.setI(backspinkI);
     backspinPID.setD(backspinkD);
     backspinPID.setIMaxAccum(1.0, 0);
-    //backspinEncoder = backspinMotor.getEncoder();
+    backspinEncoder = new CANEncoder(backspinMotor);
     
 
     arnold = new Compressor(0);
@@ -249,7 +248,7 @@ public class Robot extends TimedRobot {
     //flapSolenoid = new DoubleSolenoid(0,0,0);
     
     //camera
-    //cam = CameraServer.getInstance().startAutomaticCapture();
+    //cam = CameraServer.startAutomaticCapture();
     //cam.setResolution(320, 240);
 
     
