@@ -7,11 +7,11 @@
 
 package frc.robot;
 
-import com.revrobotics.CANEncoder;
-import com.revrobotics.CANPIDController;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkMaxPIDController;
 import com.revrobotics.CANSparkMax;
-//import com.revrobotics.ColorSensorV3;
-import com.revrobotics.ControlType;
+import com.revrobotics.ColorSensorV3;
+import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
@@ -21,18 +21,20 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
 /**
@@ -93,8 +95,8 @@ public class Robot extends TimedRobot {
   TalonSRX intakeMotor;
   CANSparkMax shooterMotor, backspinMotor;
 
-  CANPIDController shooterPID,backspinPID;
-  CANEncoder shooterEncoder,backspinEncoder;
+  SparkMaxPIDController shooterPID,backspinPID;
+  RelativeEncoder shooterEncoder,backspinEncoder;
 
   AHRS navx;
   // Block pixyBlock;
@@ -109,6 +111,7 @@ public class Robot extends TimedRobot {
   
   Compressor arnold;
   //Compressor arnold = new Compressor();
+
   boolean pickupDown = false; //if pickup is up, pickupUp is true
   boolean hoodDown = false;
   boolean flapDown = false;
@@ -221,29 +224,30 @@ public class Robot extends TimedRobot {
 
     shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
     shooterMotor.setIdleMode(IdleMode.kCoast);
-    shooterPID = new CANPIDController(shooterMotor);
+    shooterPID = shooterMotor.getPIDController();
     shooterPID.setP(shootkP);
     shooterPID.setI(shootkI);
     shooterPID.setD(shootkD);
     shooterPID.setIMaxAccum(1.0, 0);
-    shooterEncoder = new CANEncoder(shooterMotor);
+    shooterEncoder = shooterMotor.getEncoder();
     
 
     backspinMotor = new CANSparkMax(10, MotorType.kBrushless);
     backspinMotor.setIdleMode(IdleMode.kCoast);
-    backspinPID = new CANPIDController(backspinMotor);
+    backspinPID = backspinMotor.getPIDController();
     backspinPID.setP(backspinkP);
     backspinPID.setI(backspinkI);
     backspinPID.setD(backspinkD);
     backspinPID.setIMaxAccum(1.0, 0);
-    backspinEncoder = new CANEncoder(backspinMotor);
+    backspinEncoder = backspinMotor.getEncoder();
     
 
-    arnold = new Compressor(0);
-    arnold.setClosedLoopControl(true);
+    arnold = new Compressor(0,PneumaticsModuleType.REVPH);
+    //arnold.setClosedLoopControl(true);
+    
 
-    pickupSolenoid= new DoubleSolenoid(9,3,4);
-    hoodSolenoid = new DoubleSolenoid(9,1,6);
+    pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
+    hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,6);
     //FIXME stuff for flap
     //flapSolenoid = new DoubleSolenoid(0,0,0);
     
@@ -710,7 +714,7 @@ public class Robot extends TimedRobot {
     }
 
     if(match.get() > 110) {
-      arnold.stop();
+      arnold.disable();;
     }
 
     SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);

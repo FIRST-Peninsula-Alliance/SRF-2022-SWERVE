@@ -103,7 +103,8 @@ public class SRF_Swerve_Module {
 
         //SmartDashboard.putNumber("angle", angle);
         //SmartDashboard.putNumber(("encoder"+encoder),rotationMotor.getSelectedSensorPosition());
-        int currentAngle = (rotationMotor.getSelectedSensorPosition());
+        
+        double currentAngle = rotationMotor.getSelectedSensorPosition();
         double distanceBetween;
         int sign = 1;
         double gearratio=12.8;
@@ -176,7 +177,7 @@ public class SRF_Swerve_Module {
         return PIDTarget;
     }
     
-    public int getSensorValue() {
+    public double getSensorValue() {
         return rotationMotor.getSelectedSensorPosition();
     }
 
