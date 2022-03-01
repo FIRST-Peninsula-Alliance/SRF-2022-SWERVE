@@ -16,7 +16,6 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
-
 //import edu.wpi.first.cscore.UsbCamera;
 //import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
@@ -31,6 +30,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -51,9 +51,21 @@ public class Robot extends TimedRobot {
    * for any initialization code.
    */
 
-  
-  
+  //private static final String kDefaultAuto = "Default";
+	//private static final String kCustomAuto = "My Auto";
+	//private String m_autoSelected;
+  private static final String defaultTeam = "Blue";
+  private static final String customTeam = "Red";
+  private String teamSelected;
 
+  private SendableChooser<String> teamChooser = new SendableChooser<>();
+
+  private static final String defaultAuto = "Auto1";
+  private static final String customAuto = "Auto2";
+  private static final String customAuto2 = "Auto3";
+  private String AutoSelected;
+
+  private SendableChooser<String> autoChooser = new SendableChooser<>();
 
   Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
 
@@ -175,12 +187,24 @@ public class Robot extends TimedRobot {
   DigitalInput indexSensor2 = new DigitalInput(1);
   //UsbCamera cam;
   //FIXME FIELD ORIENT
-  boolean fieldOriented = true;
+  boolean fieldOriented = false;
 
   int dashboardDelay = 0;
 
   @Override
   public void robotInit() {
+    
+    //Team select
+    teamChooser.addOption("Blue", defaultTeam);
+		teamChooser.addOption("Red", customTeam);
+		SmartDashboard.putData("Team Choices", teamChooser);
+    
+    //auto Select
+    autoChooser.addOption("Auto1", defaultAuto);
+    autoChooser.addOption("Auto2", customAuto);
+    autoChooser.addOption("Auto3", customAuto2);
+    SmartDashboard.putData("Auto Choices", autoChooser);
+
     //Driving initialization
     navx = new AHRS();
 
@@ -251,7 +275,7 @@ public class Robot extends TimedRobot {
     //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
     //arnold.setClosedLoopControl(true);
     
-
+    
     //pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
     //hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,6);
     //FIXME stuff for flap
@@ -279,8 +303,8 @@ public class Robot extends TimedRobot {
      timStart = false;
      tim.stop();
      tim.reset();
-
-     //FIXME
+     AutoSelected = autoChooser.getSelected();
+     
      //hoodSolenoid.set(Value.kForward);
      shooterMotor.set(0);
      backspinMotor.set(0);
@@ -308,6 +332,14 @@ public class Robot extends TimedRobot {
     gyroRange=10;
     gyroAngle=navx.getAngle();
     
+    if(AutoSelected=="Auto1"){
+      SmartDashboard.putNumber("auto", 1);
+    }else if(AutoSelected=="Auto2"){
+      SmartDashboard.putNumber("auto", 2);
+    }else if(AutoSelected=="Auto3"){
+      SmartDashboard.putNumber("auto", 3);
+    }
+
      //the first line checks to see if we have to cross over 0
     //the second line is checking to see if the gyroangle is between 135 degrees to the right and 145 degrees to the right
     //if it isnt it rotates the robot clockwise until it is inbetween
@@ -351,7 +383,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     letUpRBump = true;
     timStart = false;
-    //FIXME
+    
     //pickupSolenoid.set(Value.kForward);
     //hoodSolenoid.set(Value.kReverse);
     shooterSpeedTemp=4600.0;
@@ -359,10 +391,18 @@ public class Robot extends TimedRobot {
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
     indexShootToggle=false;
     pickupCounter=100;
+    teamSelected = teamChooser.getSelected();
+    if(teamSelected=="Blue"){
+      teamColor=1;
+    }else{
+      teamColor=2;
+    }
+
   }
 
   @Override
   public void teleopPeriodic() {
+    teamSelected = teamChooser.getSelected();
     shooterSpeed = 0.0;
     outtakeSpeed = 0.0;
     backspinSpeed = 0.0;
@@ -471,19 +511,21 @@ public class Robot extends TimedRobot {
     //1 is blue, 2 is red
     if(indexSensorValue2==true){
       if(teamColor==1){
-        if(detectedColor.red>3826){
+        if(detectedColor.red>0.32){
           //activate motor at low velocity also do the index
         }
       }else if(teamColor==2){
-        if(detectedColor.blue>3826){
+        if(detectedColor.blue>0.3){
           //activate motor at low velocity also do the index
         }
       }
     }
 
-
-
-
+    if(teamSelected=="Blue"){
+      teamColor=1;
+    }else{
+      teamColor=2;
+    }
 
 
 
@@ -596,13 +638,7 @@ public class Robot extends TimedRobot {
       letUpPOV180 = true;
     }
   
-    
-    //FIXME Outtake Function
-    // if((controller.getRawButton(B))){
-    //   intakeMotor.set(ControlMode.PercentOutput, -1);
-    //  }else{
-    //   intakeMotor.set(ControlMode.PercentOutput, 0);
-    //  }
+  
 
      //FIXME FLAP CODE, SWITCH OFF RIGHT BUMPER
      //flap code
@@ -621,7 +657,7 @@ public class Robot extends TimedRobot {
     // }
 
     //brings up flap if above 25% speed
-    // if(Math.abs(Y)>0.25||Math.abs(X)>0.25){
+    // if((Math.abs(Y)>0.25||Math.abs(X)>0.25)&&flapDown==true){
     //   flapSolenoid.set(Value.kForward);
     //   flapDown=false;
     // }
@@ -744,7 +780,7 @@ public class Robot extends TimedRobot {
       arnold.disable();;
     }
 
-    SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+    //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
 
     //SmartDashboard commands
     if(dashboardDelay == 3) {

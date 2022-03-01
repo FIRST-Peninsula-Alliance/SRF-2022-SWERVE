@@ -166,7 +166,7 @@ public class SRF_Swerve_Module {
         //speedPID.setReference(speed, ControlType.kDutyCycle);
         //SmartDashboard.putNumber("sign", sign);
         //SmartDashboard.putNumber("Value", rotationMotor.getSelectedSensorPosition() + distanceBetween * sign);
-        speedMotor.set(ControlMode.PercentOutput, speed*0.5);
+        speedMotor.set(ControlMode.PercentOutput, speed);
         //SmartDashboard.putNumber("Distance Between", distanceBetween);
         //SmartDashboard.putNumber("MotorPosition",rotationMotor.getSelectedSensorPosition());
         PIDTarget = rotationMotor.getSelectedSensorPosition() - distanceBetween;
