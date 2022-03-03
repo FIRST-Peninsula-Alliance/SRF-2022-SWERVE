@@ -7,14 +7,7 @@
 
 package frc.robot;
 
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMax.IdleMode;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -38,8 +31,10 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.kauailabs.navx.frc.AHRS;
-
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -54,9 +49,7 @@ public class Robot extends TimedRobot {
    * for any initialization code.
    */
 
-  //private static final String kDefaultAuto = "Default";
-	//private static final String kCustomAuto = "My Auto";
-	//private String m_autoSelected;
+  
   private static final String defaultTeam = "Blue";
   private static final String customTeam = "Red";
   private String teamSelected;
@@ -107,11 +100,7 @@ public class Robot extends TimedRobot {
 
   TalonSRX indexMotor;
   TalonSRX intakeMotor;
-  CANSparkMax shooterMotor, backspinMotor;
-  TalonFX falconShooterMotor, falconBackspinMotor;
-
-  SparkMaxPIDController shooterPID,backspinPID;
-  RelativeEncoder shooterEncoder,backspinEncoder;
+  TalonFX shooterMotor, backspinMotor;
 
   
   // Block pixyBlock;
@@ -139,9 +128,9 @@ public class Robot extends TimedRobot {
   //PIDVALUES
   //drivekp was 0.55
   final double drivekP = 0.55, drivekI = 0, drivekD = 0;
-  final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
-  final double backspinkP=0.00025, backspinkI=0.00000027, backspinkD=0;
-//bruh
+  //final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
+  //final double backspinkP=0.00025, backspinkI=0.00000027, backspinkD=0;
+
   //Joystick values for swerve drive
   double x, y, w;
 
@@ -174,7 +163,7 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
-  Double shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
+  Double shooterSpeed, backspinSpeed;
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = true, unjam = false;
@@ -256,44 +245,24 @@ public class Robot extends TimedRobot {
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
-    falconShooterMotor = new TalonFX(30);
-    falconShooterMotor.configNominalOutputForward(0, 0);
-	  falconShooterMotor.configNominalOutputReverse(0, 0);
-    falconShooterMotor.setNeutralMode(NeutralMode.Coast);
-    falconShooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-    //falconShooterMotor.config_kP(0,0,0);
-    //falconShooterMotor.config_kI(0, 0, 0);
-    //falconShooterMotor.config_kP(0, 0, 0);
+    shooterMotor = new TalonFX(30);
+    shooterMotor.configNominalOutputForward(0, 0);
+	  shooterMotor.configNominalOutputReverse(0, 0);
+    shooterMotor.setNeutralMode(NeutralMode.Coast);
+    shooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
+    shooterMotor.config_kP(0,0.00050,0);
+    shooterMotor.config_kI(0, 0.00000027, 0);
+    shooterMotor.config_kP(0, 0, 0);
     
 
-    falconBackspinMotor = new TalonFX(31);
-    falconBackspinMotor.configNominalOutputForward(0, 0);
-		falconBackspinMotor.configNominalOutputReverse(0, 0);
-    falconShooterMotor.setNeutralMode(NeutralMode.Coast);
-    falconBackspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-    //falconBackspinMotor.config_kP(0,0,0);
-    //falconBackspinMotor.config_kI(0, 0, 0);
-    //falconBackspinMotor.config_kP(0, 0, 0);
-
-
-    shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
-    shooterMotor.setIdleMode(IdleMode.kCoast);
-    shooterPID = shooterMotor.getPIDController();
-    shooterPID.setP(shootkP);
-    shooterPID.setI(shootkI);
-    shooterPID.setD(shootkD);
-    shooterPID.setIMaxAccum(1.0, 0);
-    shooterEncoder = shooterMotor.getEncoder();
-    
-
-    backspinMotor = new CANSparkMax(10, MotorType.kBrushless);
-    backspinMotor.setIdleMode(IdleMode.kCoast);
-    backspinPID = backspinMotor.getPIDController();
-    backspinPID.setP(backspinkP);
-    backspinPID.setI(backspinkI);
-    backspinPID.setD(backspinkD);
-    backspinPID.setIMaxAccum(1.0, 0);
-    backspinEncoder = backspinMotor.getEncoder();
+    backspinMotor = new TalonFX(31);
+    backspinMotor.configNominalOutputForward(0, 0);
+		backspinMotor.configNominalOutputReverse(0, 0);
+    backspinMotor.setNeutralMode(NeutralMode.Coast);
+    backspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
+    backspinMotor.config_kP(0,0.00025,0);
+    backspinMotor.config_kI(0, 0.00000027, 0);
+    backspinMotor.config_kP(0, 0, 0);
     
     //FIXME First line only
     //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
@@ -331,8 +300,6 @@ public class Robot extends TimedRobot {
      AutoSelected = autoChooser.getSelected();
      
      //hoodSolenoid.set(Value.kForward);
-     shooterMotor.set(0);
-     backspinMotor.set(0);
      
      match.start();
      
@@ -411,8 +378,8 @@ public class Robot extends TimedRobot {
     
     //pickupSolenoid.set(Value.kForward);
     //hoodSolenoid.set(Value.kReverse);
-    shooterSpeedTemp=4600.0;
-    backspinSpeedTemp=2300.0;
+
+
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
     indexShootToggle=false;
     pickupCounter=100;
@@ -429,7 +396,6 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     
     teamSelected = teamChooser.getSelected();
-    shooterSpeed = 0.0;
     indexSensorValue1 = indexSensor1.get();
     indexSensorValue2 = indexSensor2.get();
     sensorProximity = colorSensor.getProximity();
@@ -689,7 +655,7 @@ public class Robot extends TimedRobot {
     
     
     //Shooter function
-    if(controller.getRawButton(rightBumper) && falconShooterMotor.getSelectedSensorVelocity() > 2800&&falconBackspinMotor.getSelectedSensorVelocity()>1400){
+    if(controller.getRawButton(rightBumper) && shooterMotor.getSelectedSensorVelocity() > 2800&&backspinMotor.getSelectedSensorVelocity()>1400){
       //the if statment makes sure it only does this once until the next ball shoots
       if(indexShootToggle==false){
         indexShootToggle=true;
@@ -702,6 +668,12 @@ public class Robot extends TimedRobot {
     
     //shooter warmup
     if(rightTrigger){
+      shooterSpeed=0.5;
+      backspinSpeed=0.25;
+      double shootertargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
+      falconShooterMotor.set(ControlMode.Velocity, ShootertargetVelocity_UnitsPer100ms);
+      double backSpintargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
+      falconShooterMotor.set(ControlMode.Velocity, backSpintargetVelocity_UnitsPer100ms);
       //shooterSpeed=-3050.0;
       //backspinSpeed=1500.0;
       
@@ -788,7 +760,18 @@ public class Robot extends TimedRobot {
     //TIMER CODE
     SmartDashboard.putNumber("Match Time", Timer.getMatchTime());
 
+    if(shooterSpeed == 0){
+      shooterMotor.set(ControlMode.PercentOutput, 0.0);
+    }else{
+      shooterMotor.set(ControlMode.Velocity, shootertargetVelocity_UnitsPer100ms);
+    }
+    
 
+    if(backspinSpeed==0){
+      backspinMotor.set(0);
+    }else{
+      backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
+    }
     
     
 
