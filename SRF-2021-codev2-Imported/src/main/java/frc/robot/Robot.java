@@ -16,8 +16,8 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 
-//import edu.wpi.first.cscore.UsbCamera;
-//import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -34,9 +35,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -102,20 +105,21 @@ public class Robot extends TimedRobot {
   //Ball Motors
   //Full rotation = 1024 Counts
 
-  //TalonFX falcon;
-
   TalonSRX indexMotor;
   TalonSRX intakeMotor;
   CANSparkMax shooterMotor, backspinMotor;
+  TalonFX falconShooterMotor, falconBackspinMotor;
 
   SparkMaxPIDController shooterPID,backspinPID;
   RelativeEncoder shooterEncoder,backspinEncoder;
 
-  AHRS navx;
+  
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
   I2C wire = new I2C(Port.kOnboard, 0x0);
   ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
+  AHRS navx = new AHRS(SPI.Port.kOnboardCS0);
+
 
   //Pneumatics
   DoubleSolenoid pickupSolenoid;
@@ -170,7 +174,7 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
-  Double outtakeSpeed, shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
+  Double shooterSpeed, shooterSpeedTemp,backspinSpeed,backspinSpeedTemp; 
   Boolean carouselVelPID = true;
   int prevCarouselPos;
   Boolean slowMode = true, unjam = false;
@@ -185,7 +189,7 @@ public class Robot extends TimedRobot {
   Timer match = new Timer();
   DigitalInput indexSensor1 = new DigitalInput(0);
   DigitalInput indexSensor2 = new DigitalInput(1);
-  //UsbCamera cam;
+  UsbCamera cam;
   //FIXME FIELD ORIENT
   boolean fieldOriented = false;
 
@@ -194,6 +198,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     
+    
+
     //Team select
     teamChooser.addOption("Blue", defaultTeam);
 		teamChooser.addOption("Red", customTeam);
@@ -238,18 +244,36 @@ public class Robot extends TimedRobot {
 
     intakeMotor = new TalonSRX(7);
     indexMotor = new TalonSRX(8);
+
+
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
 		indexMotor.configPeakOutputForward(0.5, 0);
 		indexMotor.configPeakOutputReverse(-0.5, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-
     indexMotor.config_kP(0, 0.35, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
+    falconShooterMotor = new TalonFX(30);
+    falconShooterMotor.configNominalOutputForward(0, 0);
+	  falconShooterMotor.configNominalOutputReverse(0, 0);
+    falconShooterMotor.setNeutralMode(NeutralMode.Coast);
+    falconShooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
+    //falconShooterMotor.config_kP(0,0,0);
+    //falconShooterMotor.config_kI(0, 0, 0);
+    //falconShooterMotor.config_kP(0, 0, 0);
+    
 
+    falconBackspinMotor = new TalonFX(31);
+    falconBackspinMotor.configNominalOutputForward(0, 0);
+		falconBackspinMotor.configNominalOutputReverse(0, 0);
+    falconShooterMotor.setNeutralMode(NeutralMode.Coast);
+    falconBackspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
+    //falconBackspinMotor.config_kP(0,0,0);
+    //falconBackspinMotor.config_kI(0, 0, 0);
+    //falconBackspinMotor.config_kP(0, 0, 0);
 
 
     shooterMotor = new CANSparkMax(9, MotorType.kBrushless);
@@ -282,9 +306,10 @@ public class Robot extends TimedRobot {
     //flapSolenoid = new DoubleSolenoid(0,0,0);
     
     //camera
-    //cam = CameraServer.startAutomaticCapture();
-    //cam.setResolution(320, 240);
 
+    cam = CameraServer.startAutomaticCapture();
+    cam.setResolution(320, 240);
+    //was 320 240
     
 
   }
@@ -402,10 +427,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    
     teamSelected = teamChooser.getSelected();
     shooterSpeed = 0.0;
-    outtakeSpeed = 0.0;
-    backspinSpeed = 0.0;
     indexSensorValue1 = indexSensor1.get();
     indexSensorValue2 = indexSensor2.get();
     sensorProximity = colorSensor.getProximity();
@@ -665,7 +689,7 @@ public class Robot extends TimedRobot {
     
     
     //Shooter function
-    if(controller.getRawButton(rightBumper) && shooterEncoder.getVelocity() > 2800&&backspinEncoder.getVelocity()>1400){
+    if(controller.getRawButton(rightBumper) && falconShooterMotor.getSelectedSensorVelocity() > 2800&&falconBackspinMotor.getSelectedSensorVelocity()>1400){
       //the if statment makes sure it only does this once until the next ball shoots
       if(indexShootToggle==false){
         indexShootToggle=true;
@@ -678,10 +702,10 @@ public class Robot extends TimedRobot {
     
     //shooter warmup
     if(rightTrigger){
-      shooterSpeed=-3050.0;
-      backspinSpeed=1500.0;
+      //shooterSpeed=-3050.0;
+      //backspinSpeed=1500.0;
       
-      //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
+     
       letUpRightTrigger=false;
     }else if(!rightTrigger){
       letUpRightTrigger=true;;
@@ -689,7 +713,7 @@ public class Robot extends TimedRobot {
     
     //FIXME for comp code
     //if(Timer.getMatchTime() <= 30){
-      SmartDashboard.putNumber("velocityofbackspin", backspinEncoder.getVelocity());
+      
       //climber up
       if(controller.getPOV()==0||controller.getPOV()==315||controller.getPOV()==45) {
             letUpPOV0 = false;
@@ -724,6 +748,10 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("letupA", letUpA);
      
       
+    if(controller.getRawButton(X)){
+      falconShooterMotor.set(ControlMode.PercentOutput, 0.1);
+      falconBackspinMotor.set(ControlMode.PercentOutput, 0.1);
+    }
    
     //FIXME Climber CODE
     //85000 at low power(.1 or .2)
@@ -764,17 +792,9 @@ public class Robot extends TimedRobot {
     
     
 
-    if(shooterSpeed == 0){
-      shooterMotor.set(0);
-    }else{
-      shooterPID.setReference(shooterSpeed, ControlType.kVelocity);
-    }
+    
 
-    if(backspinSpeed==0){
-      backspinMotor.set(0);
-    }else{
-      backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
-    }
+    
 
     if(match.get() > 110) {
       arnold.disable();;
