@@ -163,6 +163,8 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
+  Double shootertargetVelocity_UnitsPer100ms;
+  Double backSpintargetVelocity_UnitsPer100ms;  
   Double shooterSpeed, backspinSpeed;
   Boolean carouselVelPID = true;
   int prevCarouselPos;
@@ -180,7 +182,7 @@ public class Robot extends TimedRobot {
   DigitalInput indexSensor2 = new DigitalInput(1);
   UsbCamera cam;
   //FIXME FIELD ORIENT
-  boolean fieldOriented = false;
+  boolean fieldOriented = true;
 
   int dashboardDelay = 0;
 
@@ -201,7 +203,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putData("Auto Choices", autoChooser);
 
     //Driving initialization
-    navx = new AHRS();
 
     frontLeft = new TalonFX(12);
     frontRight = new TalonFX(14);
@@ -252,7 +253,7 @@ public class Robot extends TimedRobot {
     shooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
     shooterMotor.config_kP(0,0.00050,0);
     shooterMotor.config_kI(0, 0.00000027, 0);
-    shooterMotor.config_kP(0, 0, 0);
+    shooterMotor.config_kD(0, 0, 0);
     
 
     backspinMotor = new TalonFX(31);
@@ -262,7 +263,7 @@ public class Robot extends TimedRobot {
     backspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
     backspinMotor.config_kP(0,0.00025,0);
     backspinMotor.config_kI(0, 0.00000027, 0);
-    backspinMotor.config_kP(0, 0, 0);
+    backspinMotor.config_kD(0, 0, 0);
     
     //FIXME First line only
     //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
@@ -354,7 +355,9 @@ public class Robot extends TimedRobot {
     //       tim.start();
     //       timStart = true;
     // }
-    // if(tim.get()<4){
+    // 
+    
+    //if(tim.get()<4){
     //   driveBase.set(0, -0.25, 0);
     // }
     // if(tim.get()<7&tim.get()>4){
@@ -373,6 +376,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    shooterSpeed=0.0;
+    backspinSpeed=0.0;
     letUpRBump = true;
     timStart = false;
     
@@ -400,6 +405,7 @@ public class Robot extends TimedRobot {
     indexSensorValue2 = indexSensor2.get();
     sensorProximity = colorSensor.getProximity();
     
+    SmartDashboard.putNumber("Gyro", navx.getAngle());
     SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
@@ -670,17 +676,15 @@ public class Robot extends TimedRobot {
     if(rightTrigger){
       shooterSpeed=0.5;
       backspinSpeed=0.25;
-      double shootertargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
-      falconShooterMotor.set(ControlMode.Velocity, ShootertargetVelocity_UnitsPer100ms);
-      double backSpintargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
-      falconShooterMotor.set(ControlMode.Velocity, backSpintargetVelocity_UnitsPer100ms);
+      shootertargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
+      backSpintargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
       //shooterSpeed=-3050.0;
       //backspinSpeed=1500.0;
       
      
       letUpRightTrigger=false;
     }else if(!rightTrigger){
-      letUpRightTrigger=true;;
+      letUpRightTrigger=true;
     }
     
     //FIXME for comp code
@@ -721,8 +725,8 @@ public class Robot extends TimedRobot {
      
       
     if(controller.getRawButton(X)){
-      falconShooterMotor.set(ControlMode.PercentOutput, 0.1);
-      falconBackspinMotor.set(ControlMode.PercentOutput, 0.1);
+      shooterMotor.set(ControlMode.PercentOutput, 0.1);
+      backspinMotor.set(ControlMode.PercentOutput, 0.1);
     }
    
     //FIXME Climber CODE
@@ -760,7 +764,7 @@ public class Robot extends TimedRobot {
     //TIMER CODE
     SmartDashboard.putNumber("Match Time", Timer.getMatchTime());
 
-    if(shooterSpeed == 0){
+    if(shooterSpeed == 0.0){
       shooterMotor.set(ControlMode.PercentOutput, 0.0);
     }else{
       shooterMotor.set(ControlMode.Velocity, shootertargetVelocity_UnitsPer100ms);
@@ -768,9 +772,9 @@ public class Robot extends TimedRobot {
     
 
     if(backspinSpeed==0){
-      backspinMotor.set(0);
+      backspinMotor.set(ControlMode.PercentOutput,0.0);
     }else{
-      backspinPID.setReference(backspinSpeed, ControlType.kVelocity);
+      shooterMotor.set(ControlMode.Velocity, backSpintargetVelocity_UnitsPer100ms);
     }
     
     
@@ -779,8 +783,8 @@ public class Robot extends TimedRobot {
 
     
 
-    if(match.get() > 110) {
-      arnold.disable();;
+    if(match.get() > 165) {
+      arnold.disable();
     }
 
     //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
