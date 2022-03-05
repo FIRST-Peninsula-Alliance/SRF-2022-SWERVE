@@ -34,6 +34,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.kauailabs.navx.frc.AHRS;
 
 /**
@@ -62,6 +63,12 @@ public class Robot extends TimedRobot {
   private String AutoSelected;
 
   private SendableChooser<String> autoChooser = new SendableChooser<>();
+
+  // private static final String defaultAgitator = "AgitatorOff";
+  // private static final String customAgitator = "AgitatorOn";
+  // private String AgitatorSelected;
+
+  // private SendableChooser<String>  = new SendableChooser<>();
 
   Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
 
@@ -180,7 +187,7 @@ public class Robot extends TimedRobot {
   Timer match = new Timer();
   DigitalInput indexSensor1 = new DigitalInput(0);
   DigitalInput indexSensor2 = new DigitalInput(1);
-  UsbCamera cam;
+  //UsbCamera cam;
   //FIXME FIELD ORIENT
   boolean fieldOriented = true;
 
@@ -234,8 +241,6 @@ public class Robot extends TimedRobot {
 
     intakeMotor = new TalonSRX(7);
     indexMotor = new TalonSRX(8);
-
-
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
 		indexMotor.configPeakOutputForward(0.5, 0);
@@ -246,24 +251,36 @@ public class Robot extends TimedRobot {
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
-    shooterMotor = new TalonFX(30);
+    shooterMotor = new TalonFX(20);
     shooterMotor.configNominalOutputForward(0, 0);
 	  shooterMotor.configNominalOutputReverse(0, 0);
     shooterMotor.setNeutralMode(NeutralMode.Coast);
     shooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-    shooterMotor.config_kP(0,0.00050,0);
+    shooterMotor.config_kP(0,0.050,0);
     shooterMotor.config_kI(0, 0.00000027, 0);
     shooterMotor.config_kD(0, 0, 0);
+    shooterMotor.overrideLimitSwitchesEnable(false);
+    shooterMotor.overrideSoftLimitsEnable(false);
+    shooterMotor.enableVoltageCompensation(true);
+    shooterMotor.configVoltageCompSaturation(12);
+    shooterMotor.enableVoltageCompensation(true);
+    shooterMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
 
-    backspinMotor = new TalonFX(31);
+    backspinMotor = new TalonFX(21);
     backspinMotor.configNominalOutputForward(0, 0);
 		backspinMotor.configNominalOutputReverse(0, 0);
     backspinMotor.setNeutralMode(NeutralMode.Coast);
     backspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-    backspinMotor.config_kP(0,0.00025,0);
+    backspinMotor.config_kP(0,0.025,0);
     backspinMotor.config_kI(0, 0.00000027, 0);
     backspinMotor.config_kD(0, 0, 0);
+    backspinMotor.overrideLimitSwitchesEnable(false);
+    backspinMotor.overrideSoftLimitsEnable(false);
+    backspinMotor.enableVoltageCompensation(true);
+    backspinMotor.configVoltageCompSaturation(12);
+    backspinMotor.enableVoltageCompensation(true);
+    backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
     //FIXME First line only
     //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
@@ -277,8 +294,8 @@ public class Robot extends TimedRobot {
     
     //camera
 
-    cam = CameraServer.startAutomaticCapture();
-    cam.setResolution(320, 240);
+    //cam = CameraServer.startAutomaticCapture();
+    //cam.setResolution(320, 240);
     //was 320 240
     
 
@@ -380,6 +397,8 @@ public class Robot extends TimedRobot {
     backspinSpeed=0.0;
     letUpRBump = true;
     timStart = false;
+    shootertargetVelocity_UnitsPer100ms=0.0;
+    backSpintargetVelocity_UnitsPer100ms=0.0;
     
     //pickupSolenoid.set(Value.kForward);
     //hoodSolenoid.set(Value.kReverse);
@@ -673,19 +692,21 @@ public class Robot extends TimedRobot {
     }   
     
     //shooter warmup
-    if(rightTrigger){
+    if(rightTrigger&&letUpRightTrigger){
       shooterSpeed=0.5;
       backspinSpeed=0.25;
       shootertargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
       backSpintargetVelocity_UnitsPer100ms = shooterSpeed * 2000.0 * 2048.0 / 600.0;
       //shooterSpeed=-3050.0;
       //backspinSpeed=1500.0;
-      
-     
       letUpRightTrigger=false;
-    }else if(!rightTrigger){
+    }else if(!rightTrigger&&!letUpRightTrigger){
       letUpRightTrigger=true;
+      shooterSpeed=0.0;
+      backspinSpeed=0.0;
     }
+
+    
     
     //FIXME for comp code
     //if(Timer.getMatchTime() <= 30){
@@ -724,10 +745,7 @@ public class Robot extends TimedRobot {
       SmartDashboard.putBoolean("letupA", letUpA);
      
       
-    if(controller.getRawButton(X)){
-      shooterMotor.set(ControlMode.PercentOutput, 0.1);
-      backspinMotor.set(ControlMode.PercentOutput, 0.1);
-    }
+    
    
     //FIXME Climber CODE
     //85000 at low power(.1 or .2)
@@ -744,7 +762,6 @@ public class Robot extends TimedRobot {
     //     hookLift.set(ControlMode.PercentOutput, 0.6);
     // } else
     //   hookLift.set(ControlMode.PercentOutput, 0);
-
     // //slows down robot when the hook is up
     // if(hookLift.getSelectedSensorPosition() < -100000) {
     //   slowMode = true;
@@ -769,12 +786,13 @@ public class Robot extends TimedRobot {
     }else{
       shooterMotor.set(ControlMode.Velocity, shootertargetVelocity_UnitsPer100ms);
     }
-    
-
+    SmartDashboard.putNumber("shooterSpeed", shooterSpeed);
+    SmartDashboard.putNumber("velcitySpeed", shootertargetVelocity_UnitsPer100ms);
+    SmartDashboard.putNumber("velocity", shooterMotor.getSelectedSensorVelocity());
     if(backspinSpeed==0){
       backspinMotor.set(ControlMode.PercentOutput,0.0);
     }else{
-      shooterMotor.set(ControlMode.Velocity, backSpintargetVelocity_UnitsPer100ms);
+      backspinMotor.set(ControlMode.Velocity, backSpintargetVelocity_UnitsPer100ms);
     }
     
     
