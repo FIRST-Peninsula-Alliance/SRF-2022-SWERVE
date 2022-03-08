@@ -172,6 +172,8 @@ public class Robot extends TimedRobot {
   Boolean slowMode = true;
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
+  int AutonomousChosen;
+
   //Tim's Room
   boolean timStart = false;
   Timer tim = new Timer();
@@ -310,6 +312,17 @@ public class Robot extends TimedRobot {
      tim.stop();
      tim.reset();
      AutoSelected = autoChooser.getSelected();
+     
+     if(AutoSelected=="Auto1"){
+      AutonomousChosen=1;
+      SmartDashboard.putNumber("auto", 1);
+    }else if(AutoSelected=="Auto2"){
+      AutonomousChosen=2;
+      SmartDashboard.putNumber("auto", 2);
+    }else if(AutoSelected=="Auto3"){
+      AutonomousChosen=3;
+      SmartDashboard.putNumber("auto", 3);
+    }
 
      match.start();
      
@@ -342,6 +355,21 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("auto", 3);
     }
 
+    if(AutonomousChosen==2){
+      tim.start();
+      timStart = true;
+      if(tim.get()<3){
+        shooterSpeed=-3000;
+        backspinSpeed=3000;
+      }
+      if(tim.get()>2&&tim.get()<3){
+        indexMotor.set(ControlMode.PercentOutput, 0.275);
+      }
+      if(tim.get()>3&&tim.get()<5&&frontLeft.getSelectedSensorPosition()>3){
+
+      }
+    }
+
      //the first line checks to see if we have to cross over 0
     //the second line is checking to see if the gyroangle is between 135 degrees to the right and 145 degrees to the right
     //if it isnt it rotates the robot clockwise until it is inbetween
@@ -359,28 +387,28 @@ public class Robot extends TimedRobot {
     //   }else{
     //     driveBase.set(0,0,0.05);
     //   } 
+ 
+    if(AutonomousChosen==1){
     //timer based system
-    // if(timStart == false) {
-    //       tim.start();
-    //       timStart = true;
-    // }
-    // 
-    
-    //if(tim.get()<4){
-    //   driveBase.set(0, -0.25, 0);
-    // }
-    // if(tim.get()<7&tim.get()>4){
-    //     gyroTargetAngle=gyroStartAngle+140;
-    //   if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-    //     driveBase.set(0, 0, 0);
-    //   }else{
-    //     driveBase.set(0,0,0.15);
-    //   }
-    // }
-    // if(tim.get()>7){
-    //   driveBase.set(0,0,0);
-    // }
-  
+    if(timStart == false) {
+          tim.start();
+          timStart = true;
+    }
+      if(tim.get()<1){
+        driveBase.set(0, -0.25, 0);
+      }
+      if(tim.get()<7&tim.get()>4){
+          gyroTargetAngle=gyroStartAngle+140;
+        if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+          driveBase.set(0, 0, 0);
+        }else{
+          driveBase.set(0,0,0.15);
+        }
+      }
+      if(tim.get()>7){
+        driveBase.set(0,0,0);
+      }
+  }
   }
 
   @Override
