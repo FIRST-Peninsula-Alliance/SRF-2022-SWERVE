@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 class SRF_Swerve_Drive {
     
     private double wheelBase, trackWidth, radius;
-    double navxAngle;
+
     
     private double[] wheelSpeed = new double[4];
     private double[] wheelAngle = new double[4];

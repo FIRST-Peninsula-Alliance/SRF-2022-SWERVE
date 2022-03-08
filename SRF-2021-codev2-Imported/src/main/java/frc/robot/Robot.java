@@ -31,9 +31,6 @@ import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.kauailabs.navx.frc.AHRS;
 
@@ -118,17 +115,21 @@ public class Robot extends TimedRobot {
 
 
   //Pneumatics
-  DoubleSolenoid pickupSolenoid;
-  DoubleSolenoid flapSolenoid;
-  DoubleSolenoid hoodSolenoid;
   
-  Compressor arnold;
-  //Compressor arnold = new Compressor();
+  
+  Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
+  
+  DoubleSolenoid pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,5,6);
+  DoubleSolenoid hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
+  DoubleSolenoid flapSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
+  DoubleSolenoid climberPinsSolenoid = new DoubleSolenoid(9, PneumaticsModuleType.REVPH, 7, 8);
+  DoubleSolenoid bigClimberSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
 
   boolean pickupDown = false; //if pickup is up, pickupUp is true
   boolean hoodDown = false;
   boolean flapDown = false;
-
+  boolean climberPinsout = false;
+  boolean bigclimberdown = false;
 
   //counter to make pickup stay on for longer
   int pickupCounter;
@@ -143,27 +144,19 @@ public class Robot extends TimedRobot {
   double x, y, w;
 
   double zeroYaw, gyroAngle, gyroStartAngle,gyroTargetAngle,gyroRange;
-  
-  boolean testRotationController = true;
-  
+    
   //1 is blue, 2 is red
   int teamColor;
   int sensorProximity;
   //proximity switch is the value at which indexsensorvalue2 switched
   int ProximitySwitch=100;
-  Boolean indexSensorValue2=false;
   Boolean indexSensor2Switch=true;
-  double indexTicker=0;
-
   Boolean indexAllow=true;
   //Index Sensor Booleans
+  Boolean indexSensorValue2=false;
   Boolean indexSensorValue1=false;  
-  Boolean indexMotorToggle=false;
   Boolean indexShootToggle=false;
   Boolean indexTargetSwitch=false;
-
-  double indexEncoderCounts;
-  double indexDistanceBetween;
   double indexTargetCounts;
   
   //these are used to check if the joystick is giving out a command because they are no longer on a button but instead an axis
@@ -173,14 +166,10 @@ public class Robot extends TimedRobot {
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
-  Double shootertargetVelocity_UnitsPer100ms;
-  Double backSpintargetVelocity_UnitsPer100ms;  
-  Double shooterSpeed, backspinSpeed;
-  Boolean carouselVelPID = true;
-  int prevCarouselPos;
-  Boolean slowMode = true, unjam = false;
-  int carouselStartPos;
-  //0 -17 20 17
+  double shootertargetVelocity_UnitsPer100ms;
+  double backSpintargetVelocity_UnitsPer100ms;  
+  double shooterSpeed, backspinSpeed;
+  Boolean slowMode = true;
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
   //Tim's Room
@@ -189,10 +178,10 @@ public class Robot extends TimedRobot {
   Timer indexTimer = new Timer();
   Timer match = new Timer();
   DigitalInput indexSensor1 = new DigitalInput(0);
-  DigitalInput indexSensor2 = new DigitalInput(1);
+  
   //UsbCamera cam;
   //FIXME FIELD ORIENT
-  boolean fieldOriented = false;
+  boolean fieldOriented = true;
 
   int dashboardDelay = 0;
 
@@ -289,16 +278,14 @@ public class Robot extends TimedRobot {
     backspinMotor.enableVoltageCompensation(false);
     backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
-    //FIXME First line only
-    //arnold = new Compressor(0,PneumaticsModuleType.REVPH);
-    //arnold.setClosedLoopControl(true);
-    
-    
-    //pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
-    //hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,6);
-    //FIXME stuff for flap
-    //flapSolenoid = new DoubleSolenoid(0,0,0);
-    
+    pickupSolenoid.set(Value.kReverse);
+    hoodSolenoid.set(Value.kReverse);
+    flapSolenoid.set(Value.kReverse);
+    //FIXME big pistons, test others first
+    // climberPinsSolenoid.set(Value.kReverse);
+    // bigClimberSolenoid.set(Value.kForward);
+
+
     //camera
 
     //cam = CameraServer.startAutomaticCapture();
@@ -323,9 +310,7 @@ public class Robot extends TimedRobot {
      tim.stop();
      tim.reset();
      AutoSelected = autoChooser.getSelected();
-     
-     //hoodSolenoid.set(Value.kForward);
-     
+
      match.start();
      
      gyroStartAngle=navx.getAngle();
@@ -402,18 +387,16 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     shooterSpeed=0.0;
     backspinSpeed=0.0;
-    letUpRBump = true;
     timStart = false;
     shootertargetVelocity_UnitsPer100ms=0.0;
     backSpintargetVelocity_UnitsPer100ms=0.0;
-    
-    //pickupSolenoid.set(Value.kForward);
-    //hoodSolenoid.set(Value.kReverse);
-
-
-    indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    indexShootToggle=false;
     pickupCounter=100;
+    indexTargetCounts=indexMotor.getSelectedSensorPosition();
+    
+    
+
+    indexShootToggle=false;
+    
     teamSelected = teamChooser.getSelected();
     if(teamSelected=="Blue"){
       teamColor=1;
@@ -479,15 +462,13 @@ public class Robot extends TimedRobot {
     y *= Math.abs(y)*Math.abs(y);
     w *= Math.abs(w)*Math.abs(w);
     
-
+    
     //FIXME SLOW MODE
     if(slowMode) {
       x *= .25;
       y *= .25;
     }
 
-    
-    
     //w * 0.7 limits rotational speed
     if(fieldOriented)
       driveBase.set(x, y*-1, w*.25, gyroAngle);
@@ -515,20 +496,16 @@ public class Robot extends TimedRobot {
     double IR = colorSensor.getIR();
 
     SmartDashboard.putNumber("Red", detectedColor.red);
-    SmartDashboard.putNumber("Green", detectedColor.green);
     SmartDashboard.putNumber("Blue", detectedColor.blue);
     SmartDashboard.putNumber("IR", IR);
-    int proximity = colorSensor.getProximity();
-
-    SmartDashboard.putNumber("Proximity", proximity);
-
+    
     //this is just switching the proximity value into a boolean for easy use
     if(sensorProximity>ProximitySwitch){
       indexSensorValue2=true;
     }else{
       indexSensorValue2=false;
     }
-    //3826 is a place holder switch this value
+    
     //1 is blue, 2 is red
     if(indexSensorValue2==true){
       if(teamColor==1){
@@ -549,7 +526,40 @@ public class Robot extends TimedRobot {
       teamColor=2;
     }
 
+    //index sensors
+      //switch indexsensorvalue2 to true once you have sensor
+      if(indexSensorValue2==false){
+        if(indexSensorValue1==false){
+          if(indexTargetSwitch==false){
+            indexTargetSwitch=true;
+            indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
+            
 
+        }
+      }
+    } 
+      
+    if(indexSensorValue2==true){
+      if(indexSensor2Switch==true){
+        indexAllow=false;
+        indexSensor2Switch=false;
+      }
+    }else{
+      indexSensor2Switch=true;
+      indexAllow=true;
+    }
+
+    if(indexAllow==true){    
+      if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
+        indexMotor.set(ControlMode.Position, indexTargetCounts);
+      }else{
+        indexTargetSwitch=false; 
+      }
+    }else{
+      indexMotor.set(ControlMode.PercentOutput, 0);
+    }
+    
+    SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
 
 
 
@@ -598,10 +608,10 @@ public class Robot extends TimedRobot {
       if(controller.getRawButtonPressed(leftBumper) && letUpLBump)
       {
         if(pickupDown == false) {
-          //pickupSolenoid.set(Value.kReverse);
+          pickupSolenoid.toggle();
           pickupDown = true;
         } else {
-          //pickupSolenoid.set(Value.kForward);
+          pickupSolenoid.toggle();
           pickupDown = false;
         }
         letUpLBump = false;
@@ -610,54 +620,13 @@ public class Robot extends TimedRobot {
       }  
   
       //Slow Mode
-      // if(controller.getRawButton(rightJoystickButton)){
-      //   slowMode=true; 
-      // }else if(!controller.getRawButton(rightJoystickButton)){
-      //   slowMode=false;
-      // }
+      if(controller.getRawButton(rightJoystickButton)){
+        slowMode=true; 
+      }else if(!controller.getRawButton(rightJoystickButton)){
+        slowMode=false;
+      }
   
-      //index sensors
-      //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==false){
-        if(indexSensorValue1==false){
-          if(indexTargetSwitch==false){
-            indexTargetSwitch=true;
-            indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
-            //was80960
-
-        }
-      }
-    } 
-      
-    if(indexSensorValue2==true){
-      if(indexSensor2Switch==true){
-        indexTicker++;
-        indexAllow=false;
-        indexSensor2Switch=false;
-        // if(indexTicker>1){
-        // indexAllow=false;
-        // indexSensor2Switch=false;
-        // }
-
-      }
-    }else{
-      indexSensor2Switch=true;
-      indexAllow=true;
-      indexTicker=0;
-    }
-
-    if(indexAllow==true){    
-      if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
-        indexMotor.set(ControlMode.Position, indexTargetCounts);
-      }else{
-        indexTargetSwitch=false; 
-      }
-    }else{
-      indexMotor.set(ControlMode.PercentOutput, 0);
-    }
     
-    SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
-    SmartDashboard.putNumber("indexdifference", Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition())));
     //Hood
     if(controller.getRawButtonPressed(Y) && letUpY)
     {
@@ -724,12 +693,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("allow", indexAllow);
     //shooter warmup
     if(rightTrigger&&letUpRightTrigger){
-      shooterSpeed=1.0;
-      backspinSpeed=0.25;
-      shootertargetVelocity_UnitsPer100ms = -3000.0;//shooterSpeed * 2000.0 * 2048.0 / 600.0;
-      backSpintargetVelocity_UnitsPer100ms = 1000.0;//shooterSpeed * 2000.0 * 2048.0 / 600.0;
-      //shooterSpeed=-3050.0;
-      //backspinSpeed=1500.0;
+      shooterSpeed=-3000;
+      backspinSpeed=1000;
       letUpRightTrigger=false;
     }else if(!rightTrigger&&!letUpRightTrigger){
       letUpRightTrigger=true;
@@ -767,17 +732,7 @@ public class Robot extends TimedRobot {
     //     falcon.set(ControlMode.PercentOutput, 0.0);
     //   }
 
-    if(controller.getRawButton(A) && letUpA) {
-      indexTargetCounts-=124000;
-        letUpA = false;
-      } else if(!controller.getRawButton(A) && !letUpA) {
-        letUpA = true;
-      }
     
-     
-      
-    
-   
     //FIXME Climber CODE
     //85000 at low power(.1 or .2)
     // if(hookLift.getSelectedSensorPosition() > -865000 && controller.getRawButton(Y)) { //Y = up
@@ -815,7 +770,7 @@ public class Robot extends TimedRobot {
     if(shooterSpeed == 0.0){
       shooterMotor.set(ControlMode.PercentOutput, 0.0);
     }else{
-      shooterMotor.set(ControlMode.Velocity, -9000);
+      shooterMotor.set(ControlMode.Velocity, shooterSpeed);
     }
     SmartDashboard.putNumber("shooterSpeed", shooterSpeed);
     SmartDashboard.putNumber("velcitySpeed", shootertargetVelocity_UnitsPer100ms);
@@ -823,7 +778,7 @@ public class Robot extends TimedRobot {
     if(backspinSpeed==0){
       backspinMotor.set(ControlMode.PercentOutput,0.0);
     }else{
-      backspinMotor.set(ControlMode.Velocity, -4000);
+      backspinMotor.set(ControlMode.Velocity, backspinSpeed);
     }
     
     agitatorMotor.set(ControlMode.PercentOutput, 0.1);
