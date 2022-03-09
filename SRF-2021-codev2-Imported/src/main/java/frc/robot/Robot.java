@@ -172,6 +172,10 @@ public class Robot extends TimedRobot {
   Boolean slowMode = true;
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
+  double autoFrontLeft, autoFrontRight, autoBackLeft,autoBackRight;
+  double autoStartAverage;
+  double autoAverage;
+
   int AutonomousChosen;
 
   //Tim's Room
@@ -215,7 +219,6 @@ public class Robot extends TimedRobot {
     rearLeftRot = new TalonFX(17);
     rearRightRot = new TalonFX(15);
 
-    
 
     FLModule = new SRF_Swerve_Module(0,11, 12, drivekP, drivekI, drivekD, offSetFL);
     FRModule = new SRF_Swerve_Module(1,13, 14, drivekP, drivekI, drivekD, offSetFR);
@@ -330,6 +333,13 @@ public class Robot extends TimedRobot {
      zeroYaw = navx.getAngle() % 360;
      if(zeroYaw < 0){
        zeroYaw += 360;
+
+      autoFrontLeft=frontLeft.getSelectedSensorPosition();
+      autoFrontRight=frontRight.getSelectedSensorPosition();
+      autoBackLeft=rearLeft.getSelectedSensorPosition();
+      autoBackRight=rearRight.getSelectedSensorPosition();
+
+      
      }
 
      gyroStartAngle=navx.getAngle();
@@ -347,6 +357,9 @@ public class Robot extends TimedRobot {
     gyroRange=10;
     gyroAngle=navx.getAngle();
     
+    autoAverage=((frontLeft.getSelectedSensorPosition()+frontRight.getSelectedSensorPosition()+rearLeft.getSelectedSensorPosition()+rearRight.getSelectedSensorPosition()-autoFrontLeft-autoFrontRight-autoBackLeft-autoBackRight)/4);
+
+
     if(AutoSelected=="Auto1"){
       SmartDashboard.putNumber("auto", 1);
     }else if(AutoSelected=="Auto2"){
@@ -355,21 +368,162 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("auto", 3);
     }
 
+
+    //top auto, start on wall
     if(AutonomousChosen==2){
-      tim.start();
-      timStart = true;
-      if(tim.get()<3){
+      if(timStart == false) {
+        tim.start();
+        timStart = true;
+      }
+      
+      if(tim.get()<1){
+        
         shooterSpeed=-3000;
         backspinSpeed=3000;
       }
-      if(tim.get()>2&&tim.get()<3){
+      if(tim.get()>1&&tim.get()<2){
         indexMotor.set(ControlMode.PercentOutput, 0.275);
       }
-      if(tim.get()>3&&tim.get()<5&&frontLeft.getSelectedSensorPosition()>3){
-
+      
+      if(tim.get()>2&&tim.get()<5){
+        if(pickupDown==false){
+          pickupSolenoid.toggle();
+          pickupDown=true;
+        }
+        shooterSpeed=0;
+        backspinSpeed=0;
+        if(autoAverage<10000){
+          driveBase.set(0, -0.10, 0);
+        }
+        if(autoAverage>10000&&autoAverage<57697.2299){
+          driveBase.set(0.01, -0.25, 0);
+        }
+        if(autoAverage>57697.2299){
+          driveBase.set(0.0,-0.10,0);
+        }
+        if(autoAverage>67697.2299){
+          driveBase.set(0,0,0);
+        }
+        intakeMotor.set(ControlMode.PercentOutput, 1.0);    
+      }
+      if(tim.get()>6&&tim.get()<10){
+        shooterSpeed=-3000;
+        backspinSpeed=3000;
+        if(hoodDown==false){
+          hoodSolenoid.toggle();
+          hoodDown=true;
+        }
+        
+      }
+      if(tim.get()>7&&tim.get()<10){
+        indexMotor.set(ControlMode.PercentOutput, 0.275);
+      }
+      if(tim.get()>10&&tim.get()<11){
+        shooterSpeed=0;
+        backspinSpeed=0;
+        if(pickupDown==true){
+          pickupSolenoid.toggle();
+          pickupDown=false;
+        }
+        if(hoodDown==true){
+          hoodSolenoid.toggle();
+          hoodDown=false;
+        }
+        indexMotor.set(ControlMode.PercentOutput,0);
+        intakeMotor.set(ControlMode.PercentOutput, 0);
       }
     }
 
+
+    if(AutonomousChosen==3){
+        if(timStart == false) {
+          tim.start();
+          timStart = true;
+        }
+
+        if(tim.get()<1){
+          pickupSolenoid.toggle();
+          shooterSpeed=-3000;
+          backspinSpeed=3000;
+        }
+        if(tim.get()>1&&tim.get()<2){
+          indexMotor.set(ControlMode.PercentOutput, 0.275);
+          
+        }
+
+        if(tim.get()>2&&tim.get()<3){
+          if(autoAverage>-8181.1){
+            driveBase.set(0,-0.10,0);
+          }else{
+            driveBase.set(0, 0, 0);
+          }
+        }
+        if(tim.get()>3&&tim.get()<4){
+          gyroTargetAngle=gyroStartAngle+20;
+          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+            driveBase.set(0, 0, 0);
+          }else{
+            driveBase.set(0,0,0.15);
+          }
+          
+        }
+        if(tim.get()>4&&tim.get()<6){
+          if(pickupDown==false){
+            pickupSolenoid.toggle();
+            pickupDown=true;
+          }
+          if(autoAverage>-77412){
+          driveBase.set(0, -0.25, 0);
+          }
+        }  
+        
+        if(tim.get()>6&&tim.get()<8){
+          if(pickupDown==true){
+            pickupSolenoid.toggle();
+            pickupDown=false;
+          }
+          gyroTargetAngle=gyroStartAngle+122;
+          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+            driveBase.set(0, 0, 0);
+          }else{
+            driveBase.set(0,0,0.15);
+          }
+        }
+        if(tim.get()>8&&tim.get()<12){
+          if(pickupDown==false){
+            pickupSolenoid.toggle();
+            pickupDown=true;
+          }
+          if(autoAverage>-188322.6){
+          driveBase.set(0, -0.25, 0);
+          }
+        }
+        if(tim.get()>11&&tim.get()<12){
+          if(pickupDown==true){
+            pickupSolenoid.toggle();
+            pickupDown=false;
+          }
+          if(hoodDown==false){
+            hoodSolenoid.toggle();
+            hoodDown=true;
+          }
+          gyroTargetAngle=gyroStartAngle+76.305;
+          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+            driveBase.set(0, 0, 0);
+          }else{
+            driveBase.set(0,0,0.15);
+          }
+          shooterSpeed=-3000;
+          backspinSpeed=3000;
+        }
+        if(tim.get()>11&&tim.get()<13){
+          shooterSpeed=-3000;
+          backspinSpeed=3000;
+          indexMotor.set(ControlMode.PercentOutput, 0.275);
+        }
+    }
+    //this need indexing to be added
+    //remember encoder counts can go down and you have to add them onto the others!!!
      //the first line checks to see if we have to cross over 0
     //the second line is checking to see if the gyroangle is between 135 degrees to the right and 145 degrees to the right
     //if it isnt it rotates the robot clockwise until it is inbetween
