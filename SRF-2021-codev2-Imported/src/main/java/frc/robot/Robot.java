@@ -354,9 +354,54 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
     SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
     SmartDashboard.putNumber("time", tim.get());
+    SmartDashboard.putNumber("averageencoder", autoAverage);
+    
     gyroRange=10;
     gyroAngle=navx.getAngle();
     
+    //index code
+    indexSensorValue1 = indexSensor1.get();
+    sensorProximity = colorSensor.getIR();
+
+    if(indexSensorValue2==false){
+      if(indexSensorValue1==false){
+        if(indexTargetSwitch==false){
+          indexTargetSwitch=true;
+          indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
+          
+
+      }
+    }
+  } 
+    
+  if(indexSensorValue2==true){
+    if(indexSensor2Switch==true){
+      indexAllow=false;
+      indexSensor2Switch=false;
+    }
+  }else{
+    indexSensor2Switch=true;
+    indexAllow=true;
+  }
+
+    //shooter code
+    if(shooterSpeed == 0.0){
+      shooterMotor.set(ControlMode.PercentOutput, 0.0);
+    }else{
+      shooterMotor.set(ControlMode.Velocity, shooterSpeed);
+    }
+
+    if(backspinSpeed==0){
+      backspinMotor.set(ControlMode.PercentOutput,0.0);
+    }else{
+      backspinMotor.set(ControlMode.Velocity, backspinSpeed);
+    }
+    
+    agitatorMotor.set(ControlMode.PercentOutput, 0.1);
+
+
+
+
     autoAverage=((frontLeft.getSelectedSensorPosition()+frontRight.getSelectedSensorPosition()+rearLeft.getSelectedSensorPosition()+rearRight.getSelectedSensorPosition()-autoFrontLeft-autoFrontRight-autoBackLeft-autoBackRight)/4);
 
 
@@ -462,7 +507,7 @@ public class Robot extends TimedRobot {
           gyroTargetAngle=gyroStartAngle+20;
           if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
             driveBase.set(0, 0, 0);
-          }else{
+           }else{
             driveBase.set(0,0,0.15);
           }
           
@@ -521,6 +566,16 @@ public class Robot extends TimedRobot {
           backspinSpeed=3000;
           indexMotor.set(ControlMode.PercentOutput, 0.275);
         }
+        if(tim.get()>13&&tim.get()<15){
+          shooterSpeed=0;
+          backspinSpeed=0;
+          indexMotor.set(ControlMode.PercentOutput, 0);
+        }
+        if(hoodDown==true){
+          hoodSolenoid.toggle();
+          hoodDown=false;
+        }
+        driveBase.set(0, 0, 0);
     }
     //this need indexing to be added
     //remember encoder counts can go down and you have to add them onto the others!!!
@@ -549,18 +604,14 @@ public class Robot extends TimedRobot {
           timStart = true;
     }
       if(tim.get()<1){
-        driveBase.set(0, -0.25, 0);
+        shooterSpeed=-3000;
+        backspinSpeed=3000;
       }
-      if(tim.get()<7&tim.get()>4){
-          gyroTargetAngle=gyroStartAngle+140;
-        if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-          driveBase.set(0, 0, 0);
-        }else{
-          driveBase.set(0,0,0.15);
-        }
+      if(tim.get()>1&&tim.get()<2){
+        indexMotor.set(ControlMode.PercentOutput, 0.275);
       }
-      if(tim.get()>7){
-        driveBase.set(0,0,0);
+      if(tim.get()>2&&tim.get()<5){
+        driveBase.set(0, -0.1, 0);
       }
   }
   }
