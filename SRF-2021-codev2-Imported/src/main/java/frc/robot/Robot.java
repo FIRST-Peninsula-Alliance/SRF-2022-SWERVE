@@ -117,13 +117,13 @@ public class Robot extends TimedRobot {
   //Pneumatics
   
   
-  Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
+  // Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
   
-  DoubleSolenoid pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,5,6);
-  DoubleSolenoid hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
-  DoubleSolenoid flapSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
-  DoubleSolenoid climberPinsSolenoid = new DoubleSolenoid(9, PneumaticsModuleType.REVPH, 7, 8);
-  DoubleSolenoid bigClimberSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
+  // DoubleSolenoid pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,5,6);
+  // DoubleSolenoid hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
+  // DoubleSolenoid flapSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
+  // DoubleSolenoid climberPinsSolenoid = new DoubleSolenoid(9, PneumaticsModuleType.REVPH, 7, 8);
+  // DoubleSolenoid bigClimberSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
 
   boolean pickupDown = false; //if pickup is up, pickupUp is true
   boolean hoodDown = false;
@@ -244,7 +244,7 @@ public class Robot extends TimedRobot {
 		indexMotor.configPeakOutputReverse(-0.275, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-    indexMotor.config_kP(0, 0.20, 0);
+    indexMotor.config_kP(0, 0.45, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
@@ -283,9 +283,9 @@ public class Robot extends TimedRobot {
     backspinMotor.enableVoltageCompensation(false);
     backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
-    pickupSolenoid.set(Value.kReverse);
-    hoodSolenoid.set(Value.kReverse);
-    flapSolenoid.set(Value.kReverse);
+    // pickupSolenoid.set(Value.kReverse);
+    // hoodSolenoid.set(Value.kReverse);
+    // flapSolenoid.set(Value.kReverse);
     //FIXME big pistons, test others first
     // climberPinsSolenoid.set(Value.kReverse);
     // bigClimberSolenoid.set(Value.kForward);
@@ -355,7 +355,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
     SmartDashboard.putNumber("time", tim.get());
     SmartDashboard.putNumber("averageencoder", autoAverage);
-    
+     
+    gyroTargetAngle=gyroTargetAngle%180;    
     gyroRange=10;
     gyroAngle=navx.getAngle();
     
@@ -431,10 +432,10 @@ public class Robot extends TimedRobot {
       }
       
       if(tim.get()>2&&tim.get()<5){
-        if(pickupDown==false){
-          pickupSolenoid.toggle();
-          pickupDown=true;
-        }
+        // if(pickupDown==false){
+        //   pickupSolenoid.toggle();
+        //   pickupDown=true;
+        // }
         shooterSpeed=0;
         backspinSpeed=0;
         if(autoAverage<10000){
@@ -454,10 +455,10 @@ public class Robot extends TimedRobot {
       if(tim.get()>6&&tim.get()<10){
         shooterSpeed=-3000;
         backspinSpeed=3000;
-        if(hoodDown==false){
-          hoodSolenoid.toggle();
-          hoodDown=true;
-        }
+        // if(hoodDown==false){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=true;
+        // }
         
       }
       if(tim.get()>7&&tim.get()<10){
@@ -466,14 +467,14 @@ public class Robot extends TimedRobot {
       if(tim.get()>10&&tim.get()<11){
         shooterSpeed=0;
         backspinSpeed=0;
-        if(pickupDown==true){
-          pickupSolenoid.toggle();
-          pickupDown=false;
-        }
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
+        // if(pickupDown==true){
+        //   pickupSolenoid.toggle();
+        //   pickupDown=false;
+        // }
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
         indexMotor.set(ControlMode.PercentOutput,0);
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
@@ -486,11 +487,11 @@ public class Robot extends TimedRobot {
           timStart = true;
         }
 
-        if(tim.get()<1){
-          pickupSolenoid.toggle();
-          shooterSpeed=-3000;
-          backspinSpeed=3000;
-        }
+        // if(tim.get()<1){
+        //   pickupSolenoid.toggle();
+        //   shooterSpeed=-3000;
+        //   backspinSpeed=3000;
+        // }
         if(tim.get()>1&&tim.get()<2){
           indexMotor.set(ControlMode.PercentOutput, 0.275);
           
@@ -513,20 +514,20 @@ public class Robot extends TimedRobot {
           
         }
         if(tim.get()>4&&tim.get()<6){
-          if(pickupDown==false){
-            pickupSolenoid.toggle();
-            pickupDown=true;
-          }
+          // if(pickupDown==false){
+          //   pickupSolenoid.toggle();
+          //   pickupDown=true;
+          // }
           if(autoAverage>-77412){
           driveBase.set(0, -0.25, 0);
           }
         }  
         
         if(tim.get()>6&&tim.get()<8){
-          if(pickupDown==true){
-            pickupSolenoid.toggle();
-            pickupDown=false;
-          }
+          // if(pickupDown==true){
+          //   pickupSolenoid.toggle();
+          //   pickupDown=false;
+          // }
           gyroTargetAngle=gyroStartAngle+122;
           if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
             driveBase.set(0, 0, 0);
@@ -535,23 +536,23 @@ public class Robot extends TimedRobot {
           }
         }
         if(tim.get()>8&&tim.get()<12){
-          if(pickupDown==false){
-            pickupSolenoid.toggle();
-            pickupDown=true;
-          }
+          // if(pickupDown==false){
+          //   pickupSolenoid.toggle();
+          //   pickupDown=true;
+          // }
           if(autoAverage>-188322.6){
           driveBase.set(0, -0.25, 0);
           }
         }
         if(tim.get()>11&&tim.get()<12){
-          if(pickupDown==true){
-            pickupSolenoid.toggle();
-            pickupDown=false;
-          }
-          if(hoodDown==false){
-            hoodSolenoid.toggle();
-            hoodDown=true;
-          }
+          // if(pickupDown==true){
+          //   pickupSolenoid.toggle();
+          //   pickupDown=false;
+          // }
+          // if(hoodDown==false){
+          //   hoodSolenoid.toggle();
+          //   hoodDown=true;
+          // }
           gyroTargetAngle=gyroStartAngle+76.305;
           if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
             driveBase.set(0, 0, 0);
@@ -571,10 +572,10 @@ public class Robot extends TimedRobot {
           backspinSpeed=0;
           indexMotor.set(ControlMode.PercentOutput, 0);
         }
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
         driveBase.set(0, 0, 0);
     }
     //this need indexing to be added
@@ -598,21 +599,23 @@ public class Robot extends TimedRobot {
     //   } 
  
     if(AutonomousChosen==1){
+      
+      driveBase.set(0, 0.25, 0);
     //timer based system
-    if(timStart == false) {
-          tim.start();
-          timStart = true;
-    }
-      if(tim.get()<1){
-        shooterSpeed=-3000;
-        backspinSpeed=3000;
-      }
-      if(tim.get()>1&&tim.get()<2){
-        indexMotor.set(ControlMode.PercentOutput, 0.275);
-      }
-      if(tim.get()>2&&tim.get()<5){
-        driveBase.set(0, -0.1, 0);
-      }
+    // if(timStart == false) {
+    //       tim.start();
+    //       timStart = true;
+    // }
+    //   if(tim.get()<1){
+    //     shooterSpeed=-3000;
+    //     backspinSpeed=3000;
+    //   }
+    //   if(tim.get()>1&&tim.get()<2){
+    //     indexMotor.set(ControlMode.PercentOutput, 0.275);
+    //   }
+    //   if(tim.get()>2&&tim.get()<5){
+    //     driveBase.set(0, -0.1, 0);
+    //   }
   }
   }
 
@@ -829,7 +832,7 @@ public class Robot extends TimedRobot {
 
       //resetting field orient
       if(controller.getRawButton(rightOptionButton) && letUpRightOptions) {
-          zeroYaw = navx.getAngle() % 360;
+          zeroYaw = navx.getAngle() %360;
           if(zeroYaw < 0)
             zeroYaw += 360;
           letUpRightOptions = false;
@@ -840,13 +843,13 @@ public class Robot extends TimedRobot {
       //actuation code for pickup
       if(controller.getRawButtonPressed(leftBumper) && letUpLBump)
       {
-        if(pickupDown == false) {
-          pickupSolenoid.toggle();
-          pickupDown = true;
-        } else {
-          pickupSolenoid.toggle();
-          pickupDown = false;
-        }
+        // if(pickupDown == false) {
+        //   pickupSolenoid.toggle();
+        //   pickupDown = true;
+        // } else {
+        //   pickupSolenoid.toggle();
+        //   pickupDown = false;
+        // }
         letUpLBump = false;
       } else if(!controller.getRawButton(leftBumper)) {
         letUpLBump = true;
@@ -927,7 +930,7 @@ public class Robot extends TimedRobot {
     //shooter warmup
     if(rightTrigger&&letUpRightTrigger){
       shooterSpeed=-3000;
-      backspinSpeed=1000;
+      backspinSpeed=3000;
       letUpRightTrigger=false;
     }else if(!rightTrigger&&!letUpRightTrigger){
       letUpRightTrigger=true;
@@ -1019,12 +1022,12 @@ public class Robot extends TimedRobot {
     
 
     if(match.get() > 165) {
-      arnold.disable();
+      //arnold.disable();
     }
 
     //SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
 
-    //SmartDashboard commands
+    //SmartDashboard commandsf
     if(dashboardDelay == 3) {
       // SmartDashboard.putBoolean("Hood Down", hoodDown);
       // SmartDashboard.putBoolean("Field Oriented", fieldOriented);

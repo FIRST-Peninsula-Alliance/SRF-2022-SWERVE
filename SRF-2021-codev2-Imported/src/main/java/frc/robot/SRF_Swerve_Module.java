@@ -28,7 +28,7 @@ public class SRF_Swerve_Module {
     //CANPIDController speedPID;
     
     double speedP = 5e-5, speedI = 1e-6, speedD = 0;
-    double zeroOffset;
+    double zeroOffset=0;
     final int countsPerRev = 2048;
 
     private double PIDTarget;
@@ -40,25 +40,18 @@ public class SRF_Swerve_Module {
         
         rotationMotor.setNeutralMode(NeutralMode.Brake);
         rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-        rotationMotor.config_kP(0, P);
-        rotationMotor.config_kI(0, I);
-        rotationMotor.config_kD(0, D);
+        rotationMotor.config_kP(0, P, 0);
+        rotationMotor.config_kI(0, I, 0);
+        rotationMotor.config_kD(0, D, 0);
         
         
         speedMotor = new TalonFX(driveID);
         
         speedMotor.setNeutralMode(NeutralMode.Brake);
         speedMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 0);
-        speedMotor.config_kP(0,speedP);
-        speedMotor.config_kI(0,speedI);
-        speedMotor.config_kD(0,speedD);
-        speedMotor.setSensorPhase(true);
-        speedMotor.overrideLimitSwitchesEnable(false);
-        speedMotor.overrideSoftLimitsEnable(false);
-        speedMotor.enableVoltageCompensation(true);
-        speedMotor.configOpenloopRamp(0.08);
-        speedMotor.configVoltageCompSaturation(12);
-        speedMotor.enableVoltageCompensation(true);
+        speedMotor.config_kP(0,speedP,0);
+        speedMotor.config_kI(0,speedI,0);
+        speedMotor.config_kD(0,speedD,0);
         speedMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
         
         
@@ -66,24 +59,16 @@ public class SRF_Swerve_Module {
         
         // speedMotor = new CANSparkMax(sparkID, MotorType.kBrushless);
         // speedMotor.setIdleMode(IdleMode.kBrake);
-        // speedMotor.setSmartCurrentLimit(50);
-        // speedMotor.setOpenLoopRampRate(.35);
-        // speedPID = new CANPIDController(speedMotor);
-        // speedPID.setP(speedP);
-        // speedPID.setI(speedI);
-        // speedPID.setD(speedD);
-        //the 12.8 is the gear ratio modify if changes
-        //this value exists cause the if statment would not take math.abs
-        double offsetDifference;
+        double offsetDifference=0;
         
         offsetDifference=offset-encoder.getVoltage();
         if(Math.abs(offsetDifference)>2.5){
             if(offsetDifference>0){
             offsetDifference=-5+offsetDifference;
-            }else if(offsetDifference<0){
+            }
+        }else if(offsetDifference<0){
                 offsetDifference=5-Math.abs(offsetDifference);
             }
-        }
         //SmartDashboard.putNumber("offset"+encoderID, offset);
         //SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
