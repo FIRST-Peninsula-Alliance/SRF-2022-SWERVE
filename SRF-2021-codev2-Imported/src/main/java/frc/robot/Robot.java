@@ -46,8 +46,11 @@ public class Robot extends TimedRobot {
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
+  private static final String defaultAgitator = "On";
+  private static final String customAgitator = "Off";
+  private String agitatorSelected;
+  private SendableChooser<String> AgiatorChooser = new SendableChooser<>();
 
-  
   private static final String defaultTeam = "Blue";
   private static final String customTeam = "Red";
   private String teamSelected;
@@ -60,12 +63,6 @@ public class Robot extends TimedRobot {
   private String AutoSelected;
 
   private SendableChooser<String> autoChooser = new SendableChooser<>();
-
-  // private static final String defaultAgitator = "AgitatorOff";
-  // private static final String customAgitator = "AgitatorOn";
-  // private String AgitatorSelected;
-
-  // private SendableChooser<String>  = new SendableChooser<>();
 
   Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
 
@@ -82,7 +79,7 @@ public class Robot extends TimedRobot {
   //pickup out=x button
   //climber up=dpad up
   //climber down=dpad down
-  final int A = 1, B = 2, X = 3, Y = 4, leftBumper = 5, rightBumper = 6, leftOptionButton = 7, rightOptionButton = 8, leftJoystickButton = 9, rightJoystickButton = 10, dPadUp=11, dPadDown=12;
+  final int X = 1, A = 2, B = 3, Y = 4, leftBumper = 5, rightBumper = 6, leftTrigger = 7, rightTrigger = 8, leftOptionButton = 9, rightOptionButton = 10, leftJoystickButton=11, rightJoystickButton=12;
 
   //DriveBase Objects
   TalonFX frontLeftRot, frontRightRot, rearLeftRot, rearRightRot;
@@ -117,13 +114,13 @@ public class Robot extends TimedRobot {
   //Pneumatics
   
   
-  // Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
-  
-  // DoubleSolenoid pickupSolenoid= new DoubleSolenoid(9,PneumaticsModuleType.REVPH,5,6);
-  // DoubleSolenoid hoodSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,3,4);
-  // DoubleSolenoid flapSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
-  // DoubleSolenoid climberPinsSolenoid = new DoubleSolenoid(9, PneumaticsModuleType.REVPH, 7, 8);
-  // DoubleSolenoid bigClimberSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
+   //Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
+   
+  DoubleSolenoid pickupSolenoid= new DoubleSolenoid(1,PneumaticsModuleType.REVPH,0,4);
+  DoubleSolenoid hoodSolenoid = new DoubleSolenoid(1,PneumaticsModuleType.REVPH,2,6);
+  DoubleSolenoid flapSolenoid = new DoubleSolenoid(1,PneumaticsModuleType.REVPH,1,5);
+  DoubleSolenoid climberPinsSolenoid = new DoubleSolenoid(1, PneumaticsModuleType.REVPH, 3, 7);
+  //DoubleSolenoid bigClimberSolenoid = new DoubleSolenoid(9,PneumaticsModuleType.REVPH,1,2);
 
   boolean pickupDown = false; //if pickup is up, pickupUp is true
   boolean hoodDown = false;
@@ -140,6 +137,8 @@ public class Robot extends TimedRobot {
   //final double shootkP = 0.0005, shootkI = 0.00000027, shootkD = 0;
   //final double backspinkP=0.00025, backspinkI=0.00000027, backspinkD=0;
 
+  //agitator on/off
+  boolean agitatorSwitch=true;
   //Joystick values for swerve drive
   double x, y, w;
 
@@ -160,9 +159,12 @@ public class Robot extends TimedRobot {
   double indexTargetCounts;
   
   //these are used to check if the joystick is giving out a command because they are no longer on a button but instead an axis
-  Boolean leftTrigger=false, rightTrigger=false;
+  //this is for xbox controller not logitech, xbox controller sees triggers as an axis
+  //Boolean leftTrigger=false, rightTrigger=false;
 
   //these are to check if you let go of the button
+  //C2 is for controller 2
+  Boolean letUpPOV180C2 = true,letUpPOV0C2=true, letUpPOV90C2=true,letUPPOV270C2=true;
   Boolean letUpB = true, letUpX = true, letUpY=true,letUpA=true,letUpRBump=true,letUpLBump=true, letUpX2 = true, letUpPOV180 = true,letUpPOV0=true, letUpLeftTrigger = true, letUpRightTrigger = true,letUpLeftOptions=true, letUpRightOptions=true;
 //let up X2 is the true x let up variable, used because for whatever reason letUpX is assinged to the "A" button.
 //shooterspeedtemp is used to test different motor speeds and allow the speed of the motor to change without activating the shooter
@@ -197,7 +199,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     
-    
+    //Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
 
     //Team select
     teamChooser.addOption("Blue", defaultTeam);
@@ -247,7 +249,7 @@ public class Robot extends TimedRobot {
 		indexMotor.configPeakOutputReverse(-0.275, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-    indexMotor.config_kP(0, 0.25, 0);
+    indexMotor.config_kP(0, 0.54, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
     
@@ -286,11 +288,11 @@ public class Robot extends TimedRobot {
     backspinMotor.enableVoltageCompensation(false);
     backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
-    // pickupSolenoid.set(Value.kReverse);
-    // hoodSolenoid.set(Value.kReverse);
-    // flapSolenoid.set(Value.kReverse);
+    pickupSolenoid.set(Value.kReverse);
+    hoodSolenoid.set(Value.kReverse);
+    flapSolenoid.set(Value.kReverse);
     //FIXME big pistons, test others first
-    // climberPinsSolenoid.set(Value.kReverse);
+    climberPinsSolenoid.set(Value.kForward);
     // bigClimberSolenoid.set(Value.kForward);
 
 
@@ -366,6 +368,7 @@ public class Robot extends TimedRobot {
     //index code
     indexSensorValue1 = indexSensor1.get();
     sensorProximity = colorSensor.getIR();
+    
 
     if(indexSensorValue2==false){
       if(indexSensorValue1==false){
@@ -632,7 +635,7 @@ public class Robot extends TimedRobot {
     pickupCounter=100;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
     
-    shooterSpeedTemp=13000;
+    shooterSpeedTemp=16000;
 
     indexShootToggle=false;
     
@@ -643,11 +646,26 @@ public class Robot extends TimedRobot {
       teamColor=2;
     }
 
+    agitatorSelected = AgiatorChooser.getSelected();
+    if(agitatorSelected=="On"){
+      agitatorSwitch=true;
+    }else{
+      agitatorSwitch=false;
+    }
   }
 
   @Override
   public void teleopPeriodic() {
     
+    agitatorSelected = AgiatorChooser.getSelected();
+    if(agitatorSelected=="On"){
+      agitatorSwitch=true;
+    }else{
+      agitatorSwitch=false;
+    }
+
+    
+
     teamSelected = teamChooser.getSelected();
     indexSensorValue1 = indexSensor1.get();
     sensorProximity = colorSensor.getIR();
@@ -715,19 +733,20 @@ public class Robot extends TimedRobot {
       driveBase.set(x, y*-1, w*.25);
 
     //this gives the triggers boolean outputs, its at 0.05 so it removes noise
-    if((Math.abs(controller.getRawAxis(2))>0.05)){
-      leftTrigger=true;
-    }else{
-      leftTrigger=false;
-    }
-    SmartDashboard.putBoolean("leftTrigger", leftTrigger);
+    //xbox controller code
+    // if((Math.abs(controller.getRawAxis(2))>0.05)){
+    //   leftTrigger=true;
+    // }else{
+    //   leftTrigger=false;
+    //}
     
-    if((Math.abs(controller.getRawAxis(3))>0.05)){
-      rightTrigger=true;
-    }else{
-      rightTrigger=false;
-    }
-    SmartDashboard.putBoolean("rightTrigger", rightTrigger);
+    //xbox controller code
+    // if((Math.abs(controller.getRawAxis(3))>0.05)){
+    //   rightTrigger=true;
+    // }else{
+    //   rightTrigger=false;
+    // }
+    
     
 
     //color sensor and prox code
@@ -745,38 +764,53 @@ public class Robot extends TimedRobot {
       indexSensorValue2=false;
     }
     
-    if(indexMotor.getSelectedSensorVelocity()>100){
-      indexAllow=false;
-      indexTargetCounts=indexMotor.getSelectedSensorPosition()-1000;
-    }
+    // if(indexMotor.getSelectedSensorVelocity()>100){
+    //   indexAllow=false;
+    //   indexTargetCounts=indexMotor.getSelectedSensorPosition()-1000;
+    // }
 
     SmartDashboard.putNumber("indexvelocity", indexMotor.getSelectedSensorVelocity());
     //1 is blue, 2 is red
     if(indexSensorValue2==true){
       if(teamColor==1){
         if(detectedColor.red>0.32){
-          // shooterSpeed=-5000;
-          // backspinSpeed=5000;
-          // indexAllow=true;
-          // indexTargetCounts-=20000;
+          shooterSpeed=-5000;
+          backspinSpeed=5000;
+          indexAllow=true;
+          if(indexShootToggle==false){
+            indexShootToggle=true;
+            indexTargetCounts-=20000;
+          }else{
+            indexShootToggle=false;
+          }
           //activate motor at low velocity also do the index
         }else{
-          // shooterSpeed=0;
-          // backspinSpeed=0;
-          
+          if(controller.getRawButton(rightTrigger)==false){
+            shooterSpeed=0;
+            backspinSpeed=0;
+          }
         }
       }else if(teamColor==2){
-        if(detectedColor.blue>0.3){
-          // shooterSpeed=-5000;
-          // backspinSpeed=5000;
-          // indexAllow=true;
-          // indexTargetCounts-=20000;
-          //activate motor at low velocity also do the index
+        if(detectedColor.blue>0.28){
+          shooterSpeed=-5000;
+          backspinSpeed=5000;
+          indexAllow=true;
+          if(indexShootToggle==false){
+            indexShootToggle=true;
+            indexTargetCounts-=20000;
+          }else{
+            indexShootToggle=false;
+          }
         }else{
-          // shooterSpeed=0;
-          // backspinSpeed=0;
+          if(controller.getRawButton(rightTrigger)==false){
+            shooterSpeed=0;
+            backspinSpeed=0;
+          }
         }
       }
+    }else if(controller.getRawButton(rightTrigger)==false){
+      shooterSpeed=0;
+      backspinSpeed=0;
     }
 
     if(teamSelected=="Blue"){
@@ -813,11 +847,16 @@ public class Robot extends TimedRobot {
         indexMotor.set(ControlMode.Position, indexTargetCounts);
       }else{
         indexTargetSwitch=false; 
+        indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
       }
     }else{
-      indexMotor.set(ControlMode.PercentOutput, 0);
+      indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
     }
     
+    if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>200000){
+      
+    }
+
     SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
 
 
@@ -826,11 +865,11 @@ public class Robot extends TimedRobot {
 
 
     //pickup motor code
-    if((leftTrigger==true) && letUpLeftTrigger) {
+    if((controller.getRawButton(leftTrigger)==true) && letUpLeftTrigger) {
       intakeMotor.set(ControlMode.PercentOutput, 1);
       pickupCounter=0;
       letUpLeftTrigger = false;
-      } else if(leftTrigger==false && !letUpLeftTrigger) {
+      } else if((controller.getRawButton(leftTrigger))==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
           intakeMotor.set(ControlMode.PercentOutput, 1);
@@ -843,7 +882,7 @@ public class Robot extends TimedRobot {
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
-      if(leftTrigger==false &&pickupCounter<100){
+      if((controller.getRawButton(leftTrigger))==false &&pickupCounter<100){
         pickupCounter++;
       }
       if(pickupCounter<25){
@@ -866,13 +905,13 @@ public class Robot extends TimedRobot {
       //actuation code for pickup
       if(controller.getRawButtonPressed(leftBumper) && letUpLBump)
       {
-        // if(pickupDown == false) {
-        //   pickupSolenoid.toggle();
-        //   pickupDown = true;
-        // } else {
-        //   pickupSolenoid.toggle();
-        //   pickupDown = false;
-        // }
+        if(pickupDown == false) {
+          pickupSolenoid.toggle();
+          pickupDown = true;
+        } else {
+          pickupSolenoid.toggle();
+          pickupDown = false;
+        }
         letUpLBump = false;
       } else if(!controller.getRawButton(leftBumper)) {
         letUpLBump = true;
@@ -890,12 +929,12 @@ public class Robot extends TimedRobot {
     if(controller.getRawButtonPressed(Y) && letUpY)
     {
       
-      if(hoodDown == false) {
-        //hoodSolenoid.set(Value.kReverse);
-        hoodDown = true;
+      if(flapDown == false) {
+        flapSolenoid.toggle();
+        flapDown = true;
       } else {
-        //hoodSolenoid.set(Value.kForward);
-        hoodDown = false;
+        flapSolenoid.toggle();
+        flapDown = false;
       }
       letUpY = false;
     } else if(!controller.getRawButton(Y)) {
@@ -905,34 +944,33 @@ public class Robot extends TimedRobot {
     //field orient code
     if(controller.getRawButton(leftOptionButton) && letUpLeftOptions) {
       fieldOriented = !fieldOriented;
-      letUpPOV180 = false;
+      letUpLeftOptions = false;
     } else if(!controller.getRawButton(leftOptionButton) &&!letUpLeftOptions) {
-      letUpPOV180 = true;
+      letUpLeftOptions = true;
     }
   
     
 
-     //FIXME FLAP CODE, SWITCH OFF RIGHT BUMPER
-     //flap code
-    //  if(controller.getRawButtonPressed(rightBumper) && letUpRBump)
-    // {
-    //   if(flapDown == false) {
-    //     flapSolenoid.set(Value.kReverse);
-    //     flapDown = true;
-    //   } else {
-    //     flapSolenoid.set(Value.kForward);
-    //     flapDown = false;
-    //   }
-    //   letUpRBump = false;
-    // } else if(!controller.getRawButton(rightBumper)) {
-    //   letUpRBump = true;
-    // }
-
+    if(controller.getRawButtonPressed(A) && letUpY)
+    {
+      
+      if(hoodDown == false) {
+        hoodSolenoid.toggle();
+        hoodDown = true;
+      } else {
+        hoodSolenoid.toggle();
+        hoodDown = false;
+      }
+      letUpY = false;
+    } else if(!controller.getRawButton(Y)) {
+      letUpY = true;
+    }
+    
     //brings up flap if above 25% speed
-    // if((Math.abs(Y)>0.25||Math.abs(X)>0.25)&&flapDown==true){
-    //   flapSolenoid.set(Value.kForward);
-    //   flapDown=false;
-    // }
+    if((Math.abs(y)>0.25||Math.abs(x)>0.25)&&flapDown==false){
+      flapSolenoid.toggle();
+      flapDown=true;
+    }
     
     
     
@@ -951,24 +989,23 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("backspinvelocity", backspinMotor.getSelectedSensorVelocity());
     SmartDashboard.putBoolean("allow", indexAllow);
     //shooter warmup
-    if(rightTrigger&&letUpRightTrigger){
-      // shooterSpeed=-175000;
-      // backspinSpeed=17500;
-      shooterSpeed=-1*shooterSpeedTemp;
-      backspinSpeed=shooterSpeedTemp;
+    if((controller.getRawButton(leftTrigger))&&letUpRightTrigger){
+      if(hoodDown==false){
+        shooterSpeed=-12000;
+        backspinSpeed=12000;
+      }else{
+        shooterSpeed=-15000;
+        backspinSpeed=15000;
+      }
+      
       letUpRightTrigger=false;
-    }else if(!rightTrigger&&!letUpRightTrigger){
+    }else if(!(controller.getRawButton(rightTrigger))&&!letUpRightTrigger){
       letUpRightTrigger=true;
       shooterSpeed=0.0;
       backspinSpeed=0.0;
     }
 
-    if(controller.getRawButton(A) && letUpA) {
-      shooterSpeedTemp+=250;
-        letUpA = false;
-      } else if(!controller.getRawButton(leftBumper) && !letUpA) {
-        letUpA= true;
-      }
+    
 
 
     
@@ -976,22 +1013,51 @@ public class Robot extends TimedRobot {
     //if(Timer.getMatchTime() <= 30){
       
       //climber up
-      if(controller.getPOV()==0||controller.getPOV()==315||controller.getPOV()==45) {
+      if(controller.getPOV()==0&&letUpPOV0) {
             letUpPOV0 = false;
-            shooterSpeedTemp+=250;
-          } else if(controller.getPOV()!=0&&controller.getPOV()!=315&&controller.getPOV()!=45 && !letUpPOV0) {
+            //FIXME CLIMBER CODE
+            if(climberPinsout==false){
+              climberPinsSolenoid.toggle();
+              climberPinsout=true;
+              
+            }else if(bigclimberdown==true){
+              //bigClimberSolenoid.toggle();
+              //bigclimberdown=false;
+              
+            }
+
+          } else if(controller.getPOV()!=0 && !letUpPOV0) {
             letUpPOV0 = true;
           }
 
       //climberDown
-      if(controller.getPOV()==180||controller.getPOV()==225||controller.getPOV()==135) {
-        letUpPOV0 = false;
-        shooterSpeedTemp-=250;
-      } else if(controller.getPOV()!=180&&controller.getPOV()!=225&&controller.getPOV()!=135 && !letUpPOV0) {
-        letUpPOV0 = true;
+      if(controller.getPOV()==180&&letUpPOV180) {
+        letUpPOV180 = false;
+        //FIXME CLIMBER CODE
+        // if(bigclimberdown==false&&climberPinsout==true){
+        //   bigClimberSolenoid.toggle();
+        //   bigclimberdown=true;
+            climberPinsSolenoid.toggle();
+        // }
+      } else if(controller.getPOV()!=180&& !letUpPOV180) {
+        letUpPOV180 = true;
       }
   //}
+  
+  if(Controller2.getPOV()==180&&letUpPOV180C2) {
+    letUpPOV180C2 = false;
+    shooterSpeedTemp-=200;
+  } else if(Controller2.getPOV()!=180&& !letUpPOV180C2) {
+    letUpPOV180C2 = true;
+  }
 
+  if(Controller2.getPOV()==0&&letUpPOV0C2) {
+    letUpPOV0C2 = false;
+    shooterSpeedTemp+=200;
+  } else if(Controller2.getPOV()!=180&& !letUpPOV0C2) {
+    letUpPOV0C2 = true;
+  }
+  
 
     //example
     // if(controller.getRawButton(leftBumper) && letUpBack) {
@@ -1040,7 +1106,7 @@ public class Robot extends TimedRobot {
     if(shooterSpeed == 0.0){
       shooterMotor.set(ControlMode.PercentOutput, 0.0);
     }else{
-      shooterMotor.set(ControlMode.Velocity, shooterSpeed);
+      shooterMotor.set(ControlMode.Velocity, shooterSpeedTemp*-1);
     }
     SmartDashboard.putNumber("shooterSpeed", shooterSpeed);
     SmartDashboard.putNumber("velcitySpeed", shootertargetVelocity_UnitsPer100ms);
@@ -1048,17 +1114,22 @@ public class Robot extends TimedRobot {
     if(backspinSpeed==0){
       backspinMotor.set(ControlMode.PercentOutput,0.0);
     }else{
-      backspinMotor.set(ControlMode.Velocity, backspinSpeed);
+      backspinMotor.set(ControlMode.Velocity, shooterSpeedTemp*-1);
     }
     
-    agitatorMotor.set(ControlMode.PercentOutput, 0.1);
+    if(agitatorSwitch){
+      agitatorMotor.set(ControlMode.PercentOutput, 0.1);
+    }else{
+      agitatorMotor.set(ControlMode.PercentOutput, 0.0);
+    }
+    
     
     
 
     if(match.get() > 165) {
       //arnold.disable();
     }
-
+    
     SmartDashboard.putNumber("ShooterSpeed",shooterSpeedTemp);
 
     //SmartDashboard commandsf
