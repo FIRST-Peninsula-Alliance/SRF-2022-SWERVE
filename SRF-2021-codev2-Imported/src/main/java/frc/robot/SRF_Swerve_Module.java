@@ -7,18 +7,7 @@ import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import edu.wpi.first.wpilibj.AnalogInput;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
-
-//import com.revrobotics.CANPIDController;
-
-
-// import com.revrobotics.CANPIDController;
-
-// import com.revrobotics.CANSparkMax;
-//import com.revrobotics.ControlType;
-// import com.revrobotics.CANSparkMax.IdleMode;
-//import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
-//import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SRF_Swerve_Module {    
     TalonFX rotationMotor;
@@ -69,8 +58,8 @@ public class SRF_Swerve_Module {
         }else if(offsetDifference<0){
                 offsetDifference=5-Math.abs(offsetDifference);
             }
-        //SmartDashboard.putNumber("offset"+encoderID, offset);
-        //SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
+        //SmartDashboard.putNumber("offset"+encoderID, encoder.getVoltage());
+        SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
         zeroOffset=offsetDifference;
         //zeroOffset=Math.abs(offset-encoder.getVoltage());
@@ -82,7 +71,7 @@ public class SRF_Swerve_Module {
     }
 
     public void set(double angle, double speed) {
-        //SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
+        SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
         //SmartDashboard.updateValues();
 
 
@@ -169,5 +158,9 @@ public class SRF_Swerve_Module {
     public double getMotorPosition(){
         return speedMotor.getSelectedSensorPosition();
 
+    }
+
+    public double getEncoderVoltage(){
+        return encoder.getVoltage();
     }
 }
