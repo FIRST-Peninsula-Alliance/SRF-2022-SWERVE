@@ -3,6 +3,7 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatorCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import edu.wpi.first.wpilibj.AnalogInput;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -32,7 +33,7 @@ public class SRF_Swerve_Module {
         rotationMotor.config_kP(0, P, 0);
         rotationMotor.config_kI(0, I, 0);
         rotationMotor.config_kD(0, D, 0);
-        
+        rotationMotor.setSelectedSensorPosition(0);
         
         speedMotor = new TalonFX(driveID);
         
@@ -41,8 +42,8 @@ public class SRF_Swerve_Module {
         speedMotor.config_kP(0,speedP,0);
         speedMotor.config_kI(0,speedI,0);
         speedMotor.config_kD(0,speedD,0);
-        speedMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
-        
+        speedMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true,25,30,.2));
+        speedMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true,25,30, 0.2));
         
         
         
@@ -59,7 +60,7 @@ public class SRF_Swerve_Module {
                 offsetDifference=5-Math.abs(offsetDifference);
             }
         //SmartDashboard.putNumber("offset"+encoderID, encoder.getVoltage());
-        SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
+        //SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
         zeroOffset=offsetDifference;
         //zeroOffset=Math.abs(offset-encoder.getVoltage());
@@ -71,7 +72,7 @@ public class SRF_Swerve_Module {
     }
 
     public void set(double angle, double speed) {
-        SmartDashboard.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
+        //.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
         //SmartDashboard.updateValues();
 
 
