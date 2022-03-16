@@ -903,8 +903,6 @@ public class Robot extends TimedRobot {
       else{
         agitatorCurrentSwitch=false;
       }
-    }else{
-      
     }
 
     if(agitatorCurrentSwitch){
@@ -950,6 +948,7 @@ public class Robot extends TimedRobot {
         }   
       }else if((controller.getRawButton(B))){
         intakeMotor.set(ControlMode.PercentOutput, -1);
+        agitatorMotor.set(ControlMode.PercentOutput, -1);
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
@@ -1110,7 +1109,7 @@ public class Robot extends TimedRobot {
 
     
     //FIXME timer for climber
-    if(match.get() >= 105){
+    // if(match.get() >= 105){
       
       //climber up
       if(controller.getPOV()==0&&letUpPOV0) {
@@ -1130,7 +1129,7 @@ public class Robot extends TimedRobot {
           } else if(controller.getPOV()!=0 && !letUpPOV0) {
             letUpPOV0 = true;
           }
-
+      //b
       //climberDown
       if(controller.getPOV()==180&&letUpPOV180) {
         letUpPOV180 = false;
@@ -1143,7 +1142,7 @@ public class Robot extends TimedRobot {
       } else if(controller.getPOV()!=180&& !letUpPOV180) {
         letUpPOV180 = true;
       }
-  }
+  //}
   
   if(Controller2.getPOV()==180&&letUpPOV180C2) {
     letUpPOV180C2 = false;
