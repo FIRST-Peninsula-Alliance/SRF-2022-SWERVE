@@ -280,7 +280,7 @@ public class Robot extends TimedRobot {
     shooterMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
     //was 0.05
     //was 0.00000027
-    shooterMotor.config_kP(0,0.07,0);
+    shooterMotor.config_kP(0,0.075,0);
     shooterMotor.config_kI(0, 0.00000027, 0);
     shooterMotor.config_kD(0, 0, 0);
     shooterMotor.config_kF(0, 0, 0);
@@ -294,7 +294,7 @@ public class Robot extends TimedRobot {
 	  backspinMotor.configPeakOutputReverse(-1, 0);
     backspinMotor.setNeutralMode(NeutralMode.Coast);
     backspinMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
-    backspinMotor.config_kP(0,0.05,0);
+    backspinMotor.config_kP(0,0.06,0);
     backspinMotor.config_kI(0, 0.00000027, 0);
     backspinMotor.config_kD(0, 0, 0);
     backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
@@ -400,6 +400,9 @@ public class Robot extends TimedRobot {
   //   indexSensor2Switch=true;
   //   indexAllow=true;
   // }
+
+
+    agitatorMotor.set(ControlMode.PercentOutput, -0.3);
 
     //shooter code
     if(shooterSpeed == 0.0){
@@ -868,9 +871,7 @@ public class Robot extends TimedRobot {
       agitatorActiveSwitch=false;
     }
 
-    if(agitatorActiveSwitch==false){
-      agitatorMotor.set(ControlMode.PercentOutput, -0.2);
-    }
+    
 
 
     SmartDashboard.putNumber("intakeCurrent", intakeMotor.getSupplyCurrent());
@@ -944,18 +945,18 @@ public class Robot extends TimedRobot {
         letUpRightJoystickButton=true;
       }
   
-      if(controller.getRawButton(X)&&letUpX){
-        if(climberPinsout==false){
-            slowMode=true;
-        }
+      // if(controller.getRawButton(X)&&letUpX){
+      //   if(climberPinsout==false){
+      //       slowMode=true;
+      //   }
         
-        letUpX=false;
-      }else if(!controller.getRawButton(X)){
-        if(climberPinsout==false){
-          slowMode=false;
-        }
-        letUpX=true;
-      }
+      //   letUpX=false;
+      // }else if(!controller.getRawButton(X)){
+      //   if(climberPinsout==false){
+      //     slowMode=false;
+      //   }
+      //   letUpX=true;
+      // }
     
     //Flap
     if(controller.getRawButtonPressed(Y) && letUpY)
