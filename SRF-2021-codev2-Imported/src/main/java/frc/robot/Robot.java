@@ -26,6 +26,8 @@ import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -157,6 +159,7 @@ public class Robot extends TimedRobot {
   
   boolean agitatorCurrentSwitch=false;
   boolean agitatorTimerSwitch=false;
+  boolean agitatorActiveSwitch=false;
 
 
 
@@ -250,6 +253,7 @@ public class Robot extends TimedRobot {
     //Ball Manipulating initialization
     
     agitatorMotor = new TalonSRX(6);
+    agitatorMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true,25,30, 0.1));
     intakeMotor = new TalonSRX(7);
     intakeMotor.setNeutralMode(NeutralMode.Coast);
     indexMotor = new TalonSRX(8);
@@ -263,6 +267,9 @@ public class Robot extends TimedRobot {
     indexMotor.config_kP(0, 0.5, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
+
+    
+    indexMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true,25,30, 0.1));
     
     shooterMotor = new TalonFX(20);
     shooterMotor.configNominalOutputForward(0, 0);
@@ -277,10 +284,6 @@ public class Robot extends TimedRobot {
     shooterMotor.config_kI(0, 0.00000027, 0);
     shooterMotor.config_kD(0, 0, 0);
     shooterMotor.config_kF(0, 0, 0);
-    shooterMotor.overrideLimitSwitchesEnable(false);
-    shooterMotor.overrideSoftLimitsEnable(false);
-    shooterMotor.enableVoltageCompensation(false);
-    shooterMotor.enableVoltageCompensation(true);
     shooterMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
 
@@ -294,9 +297,6 @@ public class Robot extends TimedRobot {
     backspinMotor.config_kP(0,0.05,0);
     backspinMotor.config_kI(0, 0.00000027, 0);
     backspinMotor.config_kD(0, 0, 0);
-    backspinMotor.overrideLimitSwitchesEnable(false);
-    backspinMotor.overrideSoftLimitsEnable(false);
-    backspinMotor.enableVoltageCompensation(false);
     backspinMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
     
     pickupSolenoid.set(Value.kReverse);
@@ -470,7 +470,7 @@ public class Robot extends TimedRobot {
           pickupSolenoid.toggle();
           pickupDown=true;
         }
-        intakeMotor.set(ControlMode.PercentOutput, 1);
+        intakeMotor.set(ControlMode.PercentOutput, 0.75);
       }
       
       if(tim.get()>7&&tim.get()<9){
@@ -499,116 +499,58 @@ public class Robot extends TimedRobot {
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000;
-        // if(pickupDown==true){
-        //   pickupSolenoid.toggle();
-        //   pickupDown=false;
-        // }
-        // if(hoodDown==true){
-        //   hoodSolenoid.toggle();
-        //   hoodDown=false;
-        // }
+        if(pickupDown==true){
+          pickupSolenoid.toggle();
+          pickupDown=false;
+        }
+        if(hoodDown==true){
+          hoodSolenoid.toggle();
+          hoodDown=false;
+        }
         indexMotor.set(ControlMode.PercentOutput, -0.275);
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
+      if(tim.get()>13){
+          shooterSpeed=0;
+          backspinSpeed=0;
+          indexMotor.set(ControlMode.PercentOutput, 0);
+          gyroTargetAngle=gyroStartAngle+135;
+          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+            driveBase.set(0, 0, 0);
+           }else{
+            driveBase.set(0,0,0.15);
+          }        
+      }
     }
 
-
+    //FIXME AUTO#
     if(AutonomousChosen==3){
         if(timStart == false) {
           tim.start();
           timStart = true;
         }
-
-        // if(tim.get()<1){
-        //   pickupSolenoid.toggle();
-        //   shooterSpeed=-3000;
-        //   backspinSpeed=3000;
-        // }
-        if(tim.get()>1&&tim.get()<2){
-          indexMotor.set(ControlMode.PercentOutput, 0.275);
-          
-        }
-
-        if(tim.get()>2&&tim.get()<3){
-          if(autoAverage>-8181.1){
-            driveBase.set(0,-0.10,0);
-          }else{
-            driveBase.set(0, 0, 0);
-          }
-        }
-        if(tim.get()>3&&tim.get()<4){
-          gyroTargetAngle=gyroStartAngle+20;
-          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-            driveBase.set(0, 0, 0);
-           }else{
-            driveBase.set(0,0,0.15);
-          }
-          
-        }
-        if(tim.get()>4&&tim.get()<6){
-          // if(pickupDown==false){
-          //   pickupSolenoid.toggle();
-          //   pickupDown=true;
-          // }
-          if(autoAverage>-77412){
-          driveBase.set(0, -0.25, 0);
-          }
-        }  
+        if(tim.get()<1){
         
-        if(tim.get()>6&&tim.get()<8){
-          // if(pickupDown==true){
-          //   pickupSolenoid.toggle();
-          //   pickupDown=false;
-          // }
-          gyroTargetAngle=gyroStartAngle+122;
-          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-            driveBase.set(0, 0, 0);
+          shooterSpeed=-14500;
+          backspinSpeed=15000;
+        }
+        if(tim.get()>1&&tim.get()<2){
+          if(hoodDown==true){
+            hoodSolenoid.toggle();
+            hoodDown=false;
+          }
+          indexMotor.set(ControlMode.PercentOutput, -0.275);
+          shooterSpeed=-14500;
+          backspinSpeed=15000;
+        }
+        if(tim.get()>2&&tim.get()<3){
+          if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
+            driveBase.set(0.1, -0.1, 0);
           }else{
-            driveBase.set(0,0,0.15);
-          }
-        }
-        if(tim.get()>8&&tim.get()<12){
-          // if(pickupDown==false){
-          //   pickupSolenoid.toggle();
-          //   pickupDown=true;
-          // }
-          if(autoAverage>-188322.6){
-          driveBase.set(0, -0.25, 0);
-          }
-        }
-        if(tim.get()>11&&tim.get()<12){
-          // if(pickupDown==true){
-          //   pickupSolenoid.toggle();
-          //   pickupDown=false;
-          // }
-          // if(hoodDown==false){
-          //   hoodSolenoid.toggle();
-          //   hoodDown=true;
-          // }
-          gyroTargetAngle=gyroStartAngle+76.305;
-          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
             driveBase.set(0, 0, 0);
-          }else{
-            driveBase.set(0,0,0.15);
           }
-          shooterSpeed=-3000;
-          backspinSpeed=3000;
         }
-        if(tim.get()>11&&tim.get()<13){
-          shooterSpeed=-3000;
-          backspinSpeed=3000;
-          indexMotor.set(ControlMode.PercentOutput, 0.275);
-        }
-        if(tim.get()>13&&tim.get()<15){
-          shooterSpeed=0;
-          backspinSpeed=0;
-          indexMotor.set(ControlMode.PercentOutput, 0);
-        }
-        // if(hoodDown==true){
-        //   hoodSolenoid.toggle();
-        //   hoodDown=false;
-        // }
-        driveBase.set(0, 0, 0);
+        
     }
     //this need indexing to be added
     //remember encoder counts can go down and you have to add them onto the others!!!
@@ -908,7 +850,8 @@ public class Robot extends TimedRobot {
     if(agitatorCurrentSwitch){
       if(agitatorTimerSwitch==false){
         AgitatorTimer.start();
-      }     
+      }
+           
       
     }else{
       AgitatorTimer.stop();
@@ -918,13 +861,19 @@ public class Robot extends TimedRobot {
     
 
     if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
-      agitatorMotor.set(ControlMode.PercentOutput, 0.3);
+      agitatorMotor.set(ControlMode.PercentOutput, -0.5);
+      agitatorActiveSwitch=true;
+      
     }else{
-      agitatorMotor.set(ControlMode.PercentOutput, 0.1);
+      agitatorActiveSwitch=false;
+    }
+
+    if(agitatorActiveSwitch==false){
+      agitatorMotor.set(ControlMode.PercentOutput, -0.2);
     }
 
 
-    SmartDashboard.putNumber("indexCurrent", intakeMotor.getSupplyCurrent());
+    SmartDashboard.putNumber("intakeCurrent", intakeMotor.getSupplyCurrent());
     SmartDashboard.putNumber("AgitatorCurrent", agitatorMotor.getSupplyCurrent());
     //SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
 
@@ -935,20 +884,20 @@ public class Robot extends TimedRobot {
 
     //pickup motor code
     if(leftTrigger==true && letUpLeftTrigger) {
-      intakeMotor.set(ControlMode.PercentOutput, 1);
+      intakeMotor.set(ControlMode.PercentOutput, 0.75);
       pickupCounter=0;
       letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
-          intakeMotor.set(ControlMode.PercentOutput, 1);
+          intakeMotor.set(ControlMode.PercentOutput, 0.75);
           pickupCounter++;
         }else{
-          intakeMotor.set(ControlMode.PercentOutput, 1);
+          intakeMotor.set(ControlMode.PercentOutput, 0.75);
         }   
       }else if((controller.getRawButton(B))){
-        intakeMotor.set(ControlMode.PercentOutput, -1);
-        agitatorMotor.set(ControlMode.PercentOutput, -1);
+        intakeMotor.set(ControlMode.PercentOutput, -0.75);
+        agitatorMotor.set(ControlMode.PercentOutput, -0.5);
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
@@ -956,7 +905,7 @@ public class Robot extends TimedRobot {
         pickupCounter++;
       }
       if(pickupCounter<25){
-        intakeMotor.set(ControlMode.PercentOutput, 1);
+        intakeMotor.set(ControlMode.PercentOutput, 0.75);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
       
@@ -1125,6 +1074,8 @@ public class Robot extends TimedRobot {
               bigclimberdown=false;
               
             }
+
+            agitatorMotor.set(ControlMode.PercentOutput,0);
 
           } else if(controller.getPOV()!=0 && !letUpPOV0) {
             letUpPOV0 = true;
