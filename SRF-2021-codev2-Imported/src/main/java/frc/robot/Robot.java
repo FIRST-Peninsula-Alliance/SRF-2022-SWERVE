@@ -643,8 +643,8 @@ public class Robot extends TimedRobot {
     // SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition()%26214);
-    SmartDashboard.putNumber("IndexMotorEncoder", indexMotor.getSelectedSensorPosition());
-    SmartDashboard.putNumber("IndexTargetCounts", indexTargetCounts);
+    //SmartDashboard.putNumber("IndexMotorEncoder", indexMotor.getSelectedSensorPosition());
+    //SmartDashboard.putNumber("IndexTargetCounts", indexTargetCounts);
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     //SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
       //SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
@@ -684,6 +684,8 @@ public class Robot extends TimedRobot {
     
     //Squares the values to slow down the speeds closer to the center
     
+    SmartDashboard.putNumber("Match", match.get());
+    SmartDashboard.putNumber("time left", 150-match.get());
     
 
     x *= Math.abs(x)*Math.abs(x)*Math.abs(x);
@@ -724,11 +726,11 @@ public class Robot extends TimedRobot {
 
     //color sensor and prox code
     Color detectedColor = colorSensor.getColor();
-    double IR = colorSensor.getIR();
+    //double IR = colorSensor.getIR();
 
-    SmartDashboard.putNumber("Red", detectedColor.red);
-    SmartDashboard.putNumber("Blue", detectedColor.blue);
-    SmartDashboard.putNumber("IR", IR);
+    //SmartDashboard.putNumber("Red", detectedColor.red);
+    //SmartDashboard.putNumber("Blue", detectedColor.blue);
+    //SmartDashboard.putNumber("IR", IR);
     SmartDashboard.putBoolean("slowmode", slowMode);
     
     //this is just switching the proximity value into a boolean for easy use
@@ -803,9 +805,9 @@ public class Robot extends TimedRobot {
       }
     } 
       
-    SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
-    SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
-    SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
+    //SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
+    //SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
+    //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     
 
     if(indexSensorValue2==true){
@@ -819,7 +821,7 @@ public class Robot extends TimedRobot {
     }
 
     SmartDashboard.putBoolean("indexAllow", indexAllow);
-    SmartDashboard.putBoolean("indexSensor2Switch", indexSensor2Switch);
+    //SmartDashboard.putBoolean("indexSensor2Switch", indexSensor2Switch);
 
 
     //FIXME index
@@ -827,17 +829,14 @@ public class Robot extends TimedRobot {
       if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
         indexMotor.set(ControlMode.Position, indexTargetCounts);
         indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
-        SmartDashboard.putNumber("IndexSETTER", 1);
       }else{
         indexTargetSwitch=false; 
         indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
         indexTargetCounts=indexMotor.getSelectedSensorPosition();
-        SmartDashboard.putNumber("IndexSETTER", 2);
       }
     }else{
       indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
       indexTargetCounts=indexMotor.getSelectedSensorPosition();
-      SmartDashboard.putNumber("IndexSETTER", 3);
     }
     
 
@@ -874,8 +873,8 @@ public class Robot extends TimedRobot {
     
 
 
-    SmartDashboard.putNumber("intakeCurrent", intakeMotor.getSupplyCurrent());
-    SmartDashboard.putNumber("AgitatorCurrent", agitatorMotor.getSupplyCurrent());
+    //SmartDashboard.putNumber("intakeCurrent", intakeMotor.getSupplyCurrent());
+    //SmartDashboard.putNumber("AgitatorCurrent", agitatorMotor.getSupplyCurrent());
     //SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
 
 
@@ -1005,7 +1004,7 @@ public class Robot extends TimedRobot {
     //   pickupDown=false;
     // }
     SmartDashboard.putBoolean("hooddown", hoodDown);
-    SmartDashboard.putBoolean("fieldOreint", fieldOriented);
+    SmartDashboard.putBoolean("fieldOrient", fieldOriented);
     
     //Shooter function
     if(hoodDown==false){
@@ -1059,7 +1058,7 @@ public class Robot extends TimedRobot {
 
     
     //FIXME timer for climber
-    // if(match.get() >= 105){
+     if(match.get() >= 105){
       
       //climber up
       if(controller.getPOV()==0&&letUpPOV0) {
@@ -1081,7 +1080,7 @@ public class Robot extends TimedRobot {
           } else if(controller.getPOV()!=0 && !letUpPOV0) {
             letUpPOV0 = true;
           }
-      //b
+      
       //climberDown
       if(controller.getPOV()==180&&letUpPOV180) {
         letUpPOV180 = false;
@@ -1094,7 +1093,7 @@ public class Robot extends TimedRobot {
       } else if(controller.getPOV()!=180&& !letUpPOV180) {
         letUpPOV180 = true;
       }
-  //}
+  }
   
   if(Controller2.getPOV()==180&&letUpPOV180C2) {
     letUpPOV180C2 = false;
