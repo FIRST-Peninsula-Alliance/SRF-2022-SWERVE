@@ -182,7 +182,7 @@ public class Robot extends TimedRobot {
   Boolean slowMode = false;
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
-  
+
   
   double autoFrontLeft, autoFrontRight, autoBackLeft,autoBackRight;
   double autoStartAverage;
