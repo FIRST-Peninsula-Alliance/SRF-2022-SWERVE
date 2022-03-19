@@ -330,15 +330,18 @@ public class Robot extends TimedRobot {
      tim.stop();
      tim.reset();
      AutoSelected = autoChooser.getSelected();
+     if(AutoSelected==null){
+       AutoSelected="";
+     }
      hoodSolenoid.toggle();
      hoodDown=true;
-     if(AutoSelected=="Auto1"){
+     if(AutoSelected.equals("Auto1")){
       AutonomousChosen=1;
       SmartDashboard.putNumber("auto", 1);
-    }else if(AutoSelected=="Auto2"){
+    }else if(AutoSelected.equals("Auto2")){
       AutonomousChosen=2;
       SmartDashboard.putNumber("auto", 2);
-    }else if(AutoSelected=="Auto3"){
+    }else if(AutoSelected.equals("Auto3")){
       AutonomousChosen=3;
       SmartDashboard.putNumber("auto", 3);
     }
@@ -638,11 +641,11 @@ public class Robot extends TimedRobot {
     indexSensorValue1 = indexSensor1.get();
     sensorProximity = colorSensor.getIR();
     
-    //SmartDashboard.putNumber("Gyro", navx.getAngle());
-    // SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
-    // SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
-    // SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
-    // SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition()%26214);
+    SmartDashboard.putNumber("Gyro", navx.getAngle());
+    SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition());
     //SmartDashboard.putNumber("IndexMotorEncoder", indexMotor.getSelectedSensorPosition());
     //SmartDashboard.putNumber("IndexTargetCounts", indexTargetCounts);
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
@@ -688,9 +691,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("time left", 150-match.get());
     
 
-    x *= Math.abs(x)*Math.abs(x)*Math.abs(x);
-    y *= Math.abs(y)*Math.abs(y)*Math.abs(y);
-    w *= Math.abs(w)*Math.abs(w)*Math.abs(w);
+    x *= Math.abs(x)*Math.abs(x);
+    y *= Math.abs(y)*Math.abs(y);
+    w *= Math.abs(w)*Math.abs(w);
     
     x=x*1;
     y=y*1;
@@ -1058,7 +1061,7 @@ public class Robot extends TimedRobot {
 
     
     //FIXME timer for climber
-     if(match.get() >= 105){
+    //  if(match.get() >= 105){
       
       //climber up
       if(controller.getPOV()==0&&letUpPOV0) {
@@ -1076,7 +1079,7 @@ public class Robot extends TimedRobot {
             }
 
             agitatorMotor.set(ControlMode.PercentOutput,0);
-
+  
           } else if(controller.getPOV()!=0 && !letUpPOV0) {
             letUpPOV0 = true;
           }
@@ -1093,7 +1096,7 @@ public class Robot extends TimedRobot {
       } else if(controller.getPOV()!=180&& !letUpPOV180) {
         letUpPOV180 = true;
       }
-  }
+  //}
   
   if(Controller2.getPOV()==180&&letUpPOV180C2) {
     letUpPOV180C2 = false;

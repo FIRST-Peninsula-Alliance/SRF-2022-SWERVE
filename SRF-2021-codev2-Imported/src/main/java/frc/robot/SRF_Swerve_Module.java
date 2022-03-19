@@ -23,11 +23,13 @@ public class SRF_Swerve_Module {
 
     private double PIDTarget;
 
+    private int encoderID;
+
     public SRF_Swerve_Module(int encoderID,int rotID, int driveID, double P, double I, double D, double offset) {
         encoder = new AnalogInput(encoderID);
-        
+        this.encoderID=encoderID;
         rotationMotor = new TalonFX(rotID);
-        
+        //b
         rotationMotor.setNeutralMode(NeutralMode.Brake);
         rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
         rotationMotor.config_kP(0, P, 0);
@@ -60,7 +62,6 @@ public class SRF_Swerve_Module {
                 offsetDifference=5-Math.abs(offsetDifference);
             }
         //SmartDashboard.putNumber("offset"+encoderID, encoder.getVoltage());
-        //SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
         zeroOffset=offsetDifference;
         //zeroOffset=Math.abs(offset-encoder.getVoltage());
@@ -70,7 +71,7 @@ public class SRF_Swerve_Module {
 
 
     }
-
+    
     public void set(double angle, double speed) {
         //.putNumber(("encoder"+encoder.getChannel()), encoder.getVoltage());
         //SmartDashboard.updateValues();
@@ -131,7 +132,8 @@ public class SRF_Swerve_Module {
         }else if(speed<0){
             speed-=0.056;
         }
-        
+        SmartDashboard.putNumber("encoderCount"+encoderID, encoder.getVoltage());
+
         //SmartDashboard.putNumber("speed", speed);
         //d.putNumber("zerooffset"+encoder.getChannel(), zeroOffset*5400);
         if(Math.abs(distanceBetween) > (10*gearratio)){    
@@ -142,6 +144,7 @@ public class SRF_Swerve_Module {
         //SmartDashboard.putNumber("sign", sign);
         //SmartDashboard.putNumber("Value", rotationMotor.getSelectedSensorPosition() + distanceBetween * sign);
         speedMotor.set(ControlMode.PercentOutput, speed);
+        
         //SmartDashboard.putNumber("Distance Between", distanceBetween);
         //SmartDashboard.putNumber("MotorPosition",rotationMotor.getSelectedSensorPosition());
         PIDTarget = rotationMotor.getSelectedSensorPosition() - distanceBetween;
