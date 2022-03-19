@@ -4,7 +4,7 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
+ 
 package frc.robot;
 
 import com.revrobotics.ColorSensorV3;
@@ -455,10 +455,10 @@ public class Robot extends TimedRobot {
         backspinSpeed=15000;
       }
       if(tim.get()>1&&tim.get()<2){
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
         indexMotor.set(ControlMode.PercentOutput, -0.275);
         shooterSpeed=-14500;
         backspinSpeed=15000;
@@ -589,10 +589,10 @@ public class Robot extends TimedRobot {
         backspinSpeed=15000;
       }
       if(tim.get()>1&&tim.get()<2){
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
         indexMotor.set(ControlMode.PercentOutput, -0.275);
         shooterSpeed=-14500;
         backspinSpeed=15000;
@@ -642,10 +642,16 @@ public class Robot extends TimedRobot {
     sensorProximity = colorSensor.getIR();
     
     SmartDashboard.putNumber("Gyro", navx.getAngle());
-    SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
-    SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
-    SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
-    SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition());
+    // SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
+    // SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
+    // SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
+    // SmartDashboard.putNumber("BR", rearRightRot.getSelectedSensorPosition());
+    SmartDashboard.putNumber("FLV", frontLeft.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("FRV", frontRight.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("RLV", rearLeft.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("RRV", rearRight.getSelectedSensorVelocity());
+    
+    
     //SmartDashboard.putNumber("IndexMotorEncoder", indexMotor.getSelectedSensorPosition());
     //SmartDashboard.putNumber("IndexTargetCounts", indexTargetCounts);
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);

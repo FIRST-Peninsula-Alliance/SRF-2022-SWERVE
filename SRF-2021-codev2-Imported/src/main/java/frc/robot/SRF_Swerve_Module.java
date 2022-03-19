@@ -52,14 +52,13 @@ public class SRF_Swerve_Module {
         // speedMotor = new CANSparkMax(sparkID, MotorType.kBrushless);
         // speedMotor.setIdleMode(IdleMode.kBrake);
         double offsetDifference=0;
-        
         offsetDifference=offset-encoder.getVoltage();
-        if(Math.abs(offsetDifference)>2.5){
+        if(Math.abs(offsetDifference)>=2.45){
             if(offsetDifference>0){
-            offsetDifference=-5+offsetDifference;
+            offsetDifference=-4.9+offsetDifference;
             }
-        }else if(offsetDifference<0){
-                offsetDifference=5-Math.abs(offsetDifference);
+        }else if(offsetDifference<=0){
+                offsetDifference=4.9-Math.abs(offsetDifference);
             }
         //SmartDashboard.putNumber("offset"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
