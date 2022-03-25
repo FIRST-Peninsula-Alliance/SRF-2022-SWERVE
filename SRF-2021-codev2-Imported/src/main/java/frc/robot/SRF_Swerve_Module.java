@@ -46,6 +46,7 @@ public class SRF_Swerve_Module {
         speedMotor.config_kD(0,speedD,0);
         speedMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true,30,33.5,0.2));
         speedMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true,30,33.5, 0.2));
+        speedMotor.setSelectedSensorPosition(0);
         
         
         
