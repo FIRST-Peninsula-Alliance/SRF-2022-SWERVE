@@ -260,8 +260,8 @@ public class Robot extends TimedRobot {
     indexMotor.setNeutralMode(NeutralMode.Brake);
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
-		indexMotor.configPeakOutputForward(0.3, 0);
-		indexMotor.configPeakOutputReverse(-0.3, 0);
+		indexMotor.configPeakOutputForward(0.75, 0);
+		indexMotor.configPeakOutputReverse(-0.75, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
     indexMotor.config_kP(0, 0.5, 0);
@@ -872,7 +872,7 @@ public class Robot extends TimedRobot {
     
 
     if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
-      agitatorMotor.set(ControlMode.PercentOutput, -0.5);
+      agitatorMotor.set(ControlMode.PercentOutput, -0.75);
       agitatorActiveSwitch=true;
       
     }else{
