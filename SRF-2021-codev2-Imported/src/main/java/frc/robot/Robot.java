@@ -757,22 +757,10 @@ public class Robot extends TimedRobot {
       }
     } 
 
-    if(indexSensorValue2==true){
-      if(indexSensor2Switch==true){
-        indexTicker++;
-        indexAllow=false;
-        indexSensor2Switch=false;
-        // if(indexTicker>1){
-        // indexAllow=false;
-        // indexSensor2Switch=false;
-        // }
-
-      }
-    }else{
-      indexSensor2Switch=true;
-      indexAllow=true;
-      indexTicker=0;
-    }
+    SmartDashboard.putBoolean("indexSensorvalue1", indexSensorValue1);
+    
+    SmartDashboard.putBoolean("indexSensorvalue2", indexSensorValue2);
+    SmartDashboard.putNumber("indexTicker", indexTicker);
     //SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
     //SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
