@@ -141,6 +141,7 @@ public class Robot extends TimedRobot {
   int ProximitySwitch=100;
   Boolean indexSensor2Switch=true;
   Boolean indexAllow=true;
+  int indexTicker;
   //Index Sensor Booleans
   Boolean indexSensorValue2=false;
   Boolean indexSensorValue1=false;  
@@ -747,6 +748,7 @@ public class Robot extends TimedRobot {
       if(indexSensorValue2==false){
         if(indexSensorValue1==false){
           if(indexTargetSwitch==false){
+
             indexTargetSwitch=true;
             indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
             
@@ -754,7 +756,23 @@ public class Robot extends TimedRobot {
         }
       }
     } 
-      
+
+    if(indexSensorValue2==true){
+      if(indexSensor2Switch==true){
+        indexTicker++;
+        indexAllow=false;
+        indexSensor2Switch=false;
+        // if(indexTicker>1){
+        // indexAllow=false;
+        // indexSensor2Switch=false;
+        // }
+
+      }
+    }else{
+      indexSensor2Switch=true;
+      indexAllow=true;
+      indexTicker=0;
+    }
     //SmartDashboard.putBoolean("indexSensorValue2", indexSensorValue2);
     //SmartDashboard.putBoolean("indexSensorValue1", indexSensorValue1);
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
@@ -1079,7 +1097,7 @@ public class Robot extends TimedRobot {
     
 
     if(shooterSpeed == 0.0){
-      shooterMotor.set(ControlMode.Velocity, -10000);
+      shooterMotor.set(ControlMode.Velocity, -14000);
     }else{
       shooterMotor.set(ControlMode.Velocity, shooterSpeed);
     }
