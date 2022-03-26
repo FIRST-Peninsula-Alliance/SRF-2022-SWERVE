@@ -50,12 +50,6 @@ public class Robot extends TimedRobot {
    * for any initialization code.
    */
 
-  private static final String defaultTeam = "Blue";
-  private static final String customTeam = "Red";
-  private static final String customTeam2 = "Off"; 
-  private String teamSelected;
-
-  private SendableChooser<String> teamChooser = new SendableChooser<>();
 
   private static final String defaultAuto = "Auto1";
   private static final String customAuto = "Auto2";
@@ -197,6 +191,7 @@ public class Robot extends TimedRobot {
   Timer match = new Timer();
   Timer AgitatorTimer = new Timer();
   DigitalInput indexSensor1 = new DigitalInput(0);
+  DigitalInput indexSensor2 = new DigitalInput(1);
   
   UsbCamera cam;
   //FIXME FIELD ORIENT
@@ -210,11 +205,6 @@ public class Robot extends TimedRobot {
     //Compressor arnold = new Compressor(1,PneumaticsModuleType.REVPH);
     
 
-    //Team select
-    teamChooser.addOption("Blue", defaultTeam);
-		teamChooser.addOption("Red", customTeam);
-    teamChooser.addOption("Off", customTeam2);
-		SmartDashboard.putData("Team Choices", teamChooser);
     
     //auto Select
     autoChooser.addOption("Auto1", defaultAuto);
@@ -260,11 +250,11 @@ public class Robot extends TimedRobot {
     indexMotor.setNeutralMode(NeutralMode.Brake);
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
-		indexMotor.configPeakOutputForward(0.75, 0);
-		indexMotor.configPeakOutputReverse(-0.75, 0);
+		indexMotor.configPeakOutputForward(0.8, 0);
+		indexMotor.configPeakOutputReverse(-0.8, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-    indexMotor.config_kP(0, 0.5, 0);
+    indexMotor.config_kP(0, 0.4, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
 
@@ -623,23 +613,17 @@ public class Robot extends TimedRobot {
 
     indexShootToggle=false;
     
-    teamSelected = teamChooser.getSelected();
-    if(teamSelected=="Blue"){
-      teamColor=1;
-    }else if(teamSelected=="Red"){
-      teamColor=2;
-    }else{
-      teamColor=3;
-    }
+    
   }
     
 
   @Override
   public void teleopPeriodic() {
   
-    teamSelected = teamChooser.getSelected();
+   
     indexSensorValue1 = indexSensor1.get();
-    sensorProximity = colorSensor.getIR();
+    indexSensorValue2 = indexSensor2.get();
+    
     
     SmartDashboard.putNumber("Gyro", navx.getAngle());
     // SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
@@ -711,10 +695,22 @@ public class Robot extends TimedRobot {
     }
 
     //w * 0.7 limits rotational speed
+
+
     if(fieldOriented)
-      driveBase.set(x, y*-1, w*.5, gyroAngle);
-    else
+      if(x==0&&y==0){
+        driveBase.set(x, y*-1, w, gyroAngle);
+      }else{
+        driveBase.set(x, y*-1, w*.5, gyroAngle);
+      }
+    else{
+      if(x==0&&y==0){
+        driveBase.set(x,y*-1,w);
+      }else{
       driveBase.set(x, y*-1, w*.5);
+      }
+    }
+
 
     //this gives the triggers boolean outputs, its at 0.05 so it removes noise
     // xbox controller code
@@ -733,73 +729,18 @@ public class Robot extends TimedRobot {
     
     
 
-    //color sensor and prox code
-    Color detectedColor = colorSensor.getColor();
-    //double IR = colorSensor.getIR();
+  
 
     //SmartDashboard.putNumber("Red", detectedColor.red);
     //SmartDashboard.putNumber("Blue", detectedColor.blue);
     //SmartDashboard.putNumber("IR", IR);
     SmartDashboard.putBoolean("slowmode", slowMode);
     
-    //this is just switching the proximity value into a boolean for easy use
-    if(sensorProximity>ProximitySwitch){
-      indexSensorValue2=true;
-    }else{
-      indexSensorValue2=false;
-    }
     
-    //SmartDashboard.putNumber("indexvelocity", indexMotor.getSelectedSensorVelocity());
-    //1 is blue, 2 is red
-    if(indexSensorValue2==true){
-      if(teamColor==1){
-        if(detectedColor.red>0.32){
-          shooterSpeed=-5000;
-          backspinSpeed=5000;
-          indexAllow=true;
-          if(indexShootToggle==false){
-            indexShootToggle=true;
-            indexTargetCounts-=20000;
-          }else{
-            indexShootToggle=false;
-          }
-          //activate motor at low velocity also do the index
-        }else{
-          if(rightTrigger==false){
-            shooterSpeed=0;
-            backspinSpeed=0;
-          }
-        }
-      }else if(teamColor==2){
-        if(detectedColor.blue>0.28){
-          shooterSpeed=-5000;
-          backspinSpeed=5000;
-          indexAllow=true;
-          if(indexShootToggle==false){
-            indexShootToggle=true;
-            indexTargetCounts-=20000;
-          }else{
-            indexShootToggle=false;
-          }
-        }else{
-          if(rightTrigger==false){
-            shooterSpeed=0;
-            backspinSpeed=0;
-          }
-        }
-      }
-    }else if(rightTrigger==false){
-      shooterSpeed=0;
-      backspinSpeed=0;
-    }
+    
+   
 
-    if(teamSelected=="Blue"){
-      teamColor=1;
-    }else if(teamSelected=="Red"){
-      teamColor=2;
-    }else{
-      teamColor=3;
-    }
+    
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
@@ -1138,7 +1079,7 @@ public class Robot extends TimedRobot {
     
 
     if(shooterSpeed == 0.0){
-      shooterMotor.set(ControlMode.PercentOutput, 0.0);
+      shooterMotor.set(ControlMode.Velocity, -10000);
     }else{
       shooterMotor.set(ControlMode.Velocity, shooterSpeed);
     }
@@ -1147,6 +1088,7 @@ public class Robot extends TimedRobot {
 
     if(backspinSpeed==0){
       backspinMotor.set(ControlMode.PercentOutput,0.0);
+      
     }else{
       backspinMotor.set(ControlMode.Velocity, backspinSpeed);
     }

@@ -29,16 +29,15 @@ public class SRF_Swerve_Module {
         encoder = new AnalogInput(encoderID);
         this.encoderID=encoderID;
         rotationMotor = new TalonFX(rotID);
-        //b
         rotationMotor.setNeutralMode(NeutralMode.Brake);
         rotationMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor,0, 0);
         rotationMotor.config_kP(0, P, 0);
         rotationMotor.config_kI(0, I, 0);
         rotationMotor.config_kD(0, D, 0);
         rotationMotor.setSelectedSensorPosition(0);
-        //b
-        speedMotor = new TalonFX(driveID);
         
+
+        speedMotor = new TalonFX(driveID);
         speedMotor.setNeutralMode(NeutralMode.Brake);
         speedMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 0);
         speedMotor.config_kP(0,speedP,0);
@@ -46,7 +45,7 @@ public class SRF_Swerve_Module {
         speedMotor.config_kD(0,speedD,0);
         speedMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true,30,33.5,0.2));
         speedMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true,30,33.5, 0.2));
-        speedMotor.setSelectedSensorPosition(0);
+        //speedMotor.setSelectedSensorPosition(0);
         
         
         
@@ -54,14 +53,14 @@ public class SRF_Swerve_Module {
         // speedMotor.setIdleMode(IdleMode.kBrake);
         double offsetDifference=0;
         offsetDifference=offset-encoder.getVoltage();
-        if(Math.abs(offsetDifference)>=2.45){
+        if(Math.abs(offsetDifference)>=2.5){
             if(offsetDifference>0){
-            offsetDifference=-4.9+offsetDifference;
+            offsetDifference=-5+offsetDifference;
             }
         }else if(offsetDifference<=0){
-                offsetDifference=4.9-Math.abs(offsetDifference);
+                offsetDifference=5-Math.abs(offsetDifference);
             }
-        //SmartDashboard.putNumber("offset"+encoderID, encoder.getVoltage());
+        //SmartDashboard.putNumber`("offset"+encoderID, encoder.getVoltage());
         //SmartDashboard.putNumber("offsetDifference"+encoderID, offsetDifference);
         zeroOffset=offsetDifference;
         //zeroOffset=Math.abs(offset-encoder.getVoltage());
