@@ -745,14 +745,11 @@ public class Robot extends TimedRobot {
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==false){
+      if(indexSensorValue2==true){
         if(indexSensorValue1==false){
           if(indexTargetSwitch==false){
-
             indexTargetSwitch=true;
             indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
-            
-
         }
       }
     } 
