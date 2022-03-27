@@ -97,8 +97,6 @@ public class Robot extends TimedRobot {
   
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
-  I2C wire = new I2C(Port.kOnboard, 0x0);
-  ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
   AHRS navx = new AHRS(SPI.Port.kOnboardCS0);
 
 
