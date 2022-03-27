@@ -1082,7 +1082,9 @@ public class Robot extends TimedRobot {
     
 
     if(shooterSpeed == 0.0){
-      shooterMotor.set(ControlMode.Velocity, -14000);
+      //FIXME set back to -14000
+      //shooterMotor.set(ControlMode.Velocity, -14000);
+      shooterMotor.set(ControlMode.PercentOutput, 0);
     }else{
       shooterMotor.set(ControlMode.Velocity, shooterSpeed);
     }
