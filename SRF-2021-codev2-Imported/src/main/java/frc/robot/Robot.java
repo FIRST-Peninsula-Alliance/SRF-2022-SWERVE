@@ -456,7 +456,7 @@ public class Robot extends TimedRobot {
       }
       if(tim.get()>2&&tim.get()<7){
         if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<45000){
-          driveBase.set(-0.1, 0.10, 0);
+          driveBase.set(-0.2, 0.20, 0);
         }else{
           driveBase.set(0, 0, 0);
         }
@@ -472,7 +472,7 @@ public class Robot extends TimedRobot {
       
       if(tim.get()>7&&tim.get()<9){
         if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
-          driveBase.set(0.1, -0.1, 0);
+          driveBase.set(0.2, -0.2, 0);
         }else{
           driveBase.set(0, 0, 0);
         }
