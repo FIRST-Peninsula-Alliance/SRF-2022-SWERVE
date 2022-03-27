@@ -58,7 +58,7 @@ public class Robot extends TimedRobot {
 
   private SendableChooser<String> autoChooser = new SendableChooser<>();
 
-  Joystick controller = new Joystick(0), Controller2 = new Joystick(1);
+  Joystick controller = new Joystick(0);
 
   //Button numbers for controls
   //Flap=right bumber
@@ -446,11 +446,11 @@ public class Robot extends TimedRobot {
         backspinSpeed=15000;
       }
       if(tim.get()>1&&tim.get()<2){
-        // if(hoodDown==true){
-        //   hoodSolenoid.toggle();
-        //   hoodDown=false;
-        // }
-        indexMotor.set(ControlMode.PercentOutput, -0.275);
+        if(hoodDown==false){
+          hoodSolenoid.toggle();
+          hoodDown=true;
+        }
+        indexMotor.set(ControlMode.PercentOutput, -0.8);
         shooterSpeed=-14500;
         backspinSpeed=15000;
       }
@@ -467,7 +467,7 @@ public class Robot extends TimedRobot {
           pickupSolenoid.toggle();
           pickupDown=true;
         }
-        intakeMotor.set(ControlMode.PercentOutput, 0.75);
+        intakeMotor.set(ControlMode.PercentOutput, 0.9);
       }
       
       if(tim.get()>7&&tim.get()<9){
@@ -490,7 +490,7 @@ public class Robot extends TimedRobot {
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000;
-        indexMotor.set(ControlMode.PercentOutput, -0.275);
+        indexMotor.set(ControlMode.PercentOutput, -0.9);
       }
       if(tim.get()>12&&tim.get()<13){
         driveBase.set(0, 0, 0);
@@ -500,11 +500,11 @@ public class Robot extends TimedRobot {
           pickupSolenoid.toggle();
           pickupDown=false;
         }
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
-        indexMotor.set(ControlMode.PercentOutput, -0.275);
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
+        indexMotor.set(ControlMode.PercentOutput, -0.9);
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
       if(tim.get()>13){
@@ -512,11 +512,11 @@ public class Robot extends TimedRobot {
           backspinSpeed=0;
           indexMotor.set(ControlMode.PercentOutput, 0);
           gyroTargetAngle=gyroStartAngle+135;
-          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-            driveBase.set(0, 0, 0);
-           }else{
-            driveBase.set(0,0,0.15);
-          }        
+          // if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
+          //   driveBase.set(0, 0, 0);
+          //  }else{
+          //   driveBase.set(0,0,0.15);
+          // }        
       }
     }
 
@@ -580,11 +580,11 @@ public class Robot extends TimedRobot {
         backspinSpeed=15000;
       }
       if(tim.get()>1&&tim.get()<2){
-        // if(hoodDown==true){
-        //   hoodSolenoid.toggle();
-        //   hoodDown=false;
-        // }
-        indexMotor.set(ControlMode.PercentOutput, -0.275);
+        if(hoodDown==false){
+          hoodSolenoid.toggle();
+          hoodDown=true;
+        }
+        indexMotor.set(ControlMode.PercentOutput, -0.8);
         shooterSpeed=-14500;
         backspinSpeed=15000;
       }
@@ -596,6 +596,10 @@ public class Robot extends TimedRobot {
       }
       if(tim.get()>5&&tim.get()<5.6){
         driveBase.set(0, 0, 0);
+         if(hoodDown==true){
+          hoodSolenoid.toggle();
+          hoodDown=false;
+        }
       }
   }
   }
@@ -745,7 +749,7 @@ public class Robot extends TimedRobot {
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==true){
+      if(indexSensorValue2==false){
         if(indexSensorValue1==false){
           if(indexTargetSwitch==false){
             indexTargetSwitch=true;
@@ -753,7 +757,7 @@ public class Robot extends TimedRobot {
         }
       }
     } 
-
+    SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     SmartDashboard.putBoolean("indexSensorvalue1", indexSensorValue1);
     
     SmartDashboard.putBoolean("indexSensorvalue2", indexSensorValue2);
@@ -837,16 +841,16 @@ public class Robot extends TimedRobot {
 
     //pickup motor code
     if(leftTrigger==true && letUpLeftTrigger) {
-      intakeMotor.set(ControlMode.PercentOutput, 0.75);
+      intakeMotor.set(ControlMode.PercentOutput, 0.9);
       pickupCounter=0;
       letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
-          intakeMotor.set(ControlMode.PercentOutput, 0.75);
+          intakeMotor.set(ControlMode.PercentOutput, 0.9);
           pickupCounter++;
         }else{
-          intakeMotor.set(ControlMode.PercentOutput, 0.75);
+          intakeMotor.set(ControlMode.PercentOutput, 0.9);
         }   
       }else if((controller.getRawButton(B))){
         intakeMotor.set(ControlMode.PercentOutput, -0.75);
@@ -858,7 +862,7 @@ public class Robot extends TimedRobot {
         pickupCounter++;
       }
       if(pickupCounter<25){
-        intakeMotor.set(ControlMode.PercentOutput, 0.75);
+        intakeMotor.set(ControlMode.PercentOutput, 0.9);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
       
@@ -1048,19 +1052,7 @@ public class Robot extends TimedRobot {
       }
   //}
   
-  if(Controller2.getPOV()==180&&letUpPOV180C2) {
-    letUpPOV180C2 = false;
-    climberPinsSolenoid.toggle();
-  } else if(Controller2.getPOV()!=180&& !letUpPOV180C2) {
-    letUpPOV180C2 = true;
-  }
-
-  if(Controller2.getPOV()==0&&letUpPOV0C2) {
-    letUpPOV0C2 = false;
-    shooterSpeedTemp+=100;
-  } else if(Controller2.getPOV()!=180&& !letUpPOV0C2) {
-    letUpPOV0C2 = true;
-  }
+  
   
 
     //example
@@ -1083,8 +1075,8 @@ public class Robot extends TimedRobot {
 
     if(shooterSpeed == 0.0){
       //FIXME set back to -14000
-      //shooterMotor.set(ControlMode.Velocity, -14000);
-      shooterMotor.set(ControlMode.PercentOutput, 0);
+      shooterMotor.set(ControlMode.Velocity, -14000);
+      //shooterMotor.set(ControlMode.PercentOutput, 0);
     }else{
       shooterMotor.set(ControlMode.Velocity, shooterSpeed);
     }
