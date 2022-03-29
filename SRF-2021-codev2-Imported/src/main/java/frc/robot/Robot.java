@@ -98,9 +98,8 @@ public class Robot extends TimedRobot {
   
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
-  I2C wire = new I2C(Port.kOnboard, 0x0);
-  ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
-  AHRS navx = new AHRS(SPI.Port.kOnboardCS0);
+  
+  private final AHRS navx = new AHRS(SPI.Port.kMXP);
   
 
 
@@ -152,8 +151,8 @@ public class Robot extends TimedRobot {
   double indexTargetCounts;
   double indexCountsDifference;
   
+  boolean backspinSwitch=false;
 
-  
   boolean agitatorCurrentSwitch=false;
   boolean agitatorTimerSwitch=false;
   boolean agitatorActiveSwitch=false;
@@ -398,7 +397,7 @@ public class Robot extends TimedRobot {
   // }
 
 
-    agitatorMotor.set(ControlMode.PercentOutput, -0.3);
+    agitatorMotor.set(ControlMode.PercentOutput, 0.3);
 
     //shooter code
     if(shooterSpeed == 0.0){
@@ -502,10 +501,10 @@ public class Robot extends TimedRobot {
           pickupSolenoid.toggle();
           pickupDown=false;
         }
-        // if(hoodDown==true){
-        //   hoodSolenoid.toggle();
-        //   hoodDown=false;
-        // }
+        if(hoodDown==true){
+          hoodSolenoid.toggle();
+          hoodDown=false;
+        }
         indexMotor.set(ControlMode.PercentOutput, -0.9);
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
@@ -785,7 +784,7 @@ public class Robot extends TimedRobot {
     if(indexAllow==true){    
       if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
         indexMotor.set(ControlMode.Position, indexTargetCounts);
-        agitatorMotor.set(ControlMode.PercentOutput, -0.7);
+        agitatorMotor.set(ControlMode.PercentOutput, 0.7);
         indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
       }else{
         indexTargetSwitch=false; 
@@ -843,32 +842,32 @@ public class Robot extends TimedRobot {
     //pickup motor code
     if(leftTrigger==true && letUpLeftTrigger) {
       intakeMotor.set(ControlMode.PercentOutput, 0.9);
-      agitatorMotor.set(ControlMode.PercentOutput, -0.7);
+      agitatorMotor.set(ControlMode.PercentOutput, 0.7);
       pickupCounter=0;
       letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
-          agitatorMotor.set(ControlMode.PercentOutput, -0.7);
+          agitatorMotor.set(ControlMode.PercentOutput, 0.7);
           pickupCounter++;
         }else{
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
-          agitatorMotor.set(ControlMode.PercentOutput, -0.7);
+          agitatorMotor.set(ControlMode.PercentOutput, 0.7);
         }   
       }else if((controller.getRawButton(B))){
         intakeMotor.set(ControlMode.PercentOutput, -0.75);
         agitatorMotor.set(ControlMode.PercentOutput, -0.5);
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
-        agitatorMotor.set(ControlMode.PercentOutput, -0.15);
+        agitatorMotor.set(ControlMode.PercentOutput, 0.15);
       }
       if(leftTrigger==false &&pickupCounter<300){
         pickupCounter++;
       }
       if(pickupCounter<25){
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
-        agitatorMotor.set(ControlMode.PercentOutput, -0.7);
+        agitatorMotor.set(ControlMode.PercentOutput, 0.7);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
       
@@ -1089,13 +1088,17 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("velocity", shooterMotor.getSelectedSensorVelocity());
     SmartDashboard.putNumber("backspinVelocity", backspinMotor.getSelectedSensorVelocity());
 
-    if(backspinSpeed==0){
-      backspinMotor.set(ControlMode.PercentOutput,0.0);
-      
-    }else{
-      backspinMotor.set(ControlMode.Velocity, backspinSpeed);
+    if(backspinSwitch==false){
+      if(backspinSpeed==0){
+        backspinMotor.set(ControlMode.PercentOutput,0.0);
+        backspinSwitch=false;
+      }else{
+        backspinMotor.set(ControlMode.Velocity, backspinSpeed);
+        backspinSwitch=true;
+      }
     }
     
+
 
     if(match.get() > 105) {
       //arnold.disable();
