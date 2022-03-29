@@ -37,6 +37,7 @@ import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.kauailabs.navx.frc.AHRS;
 
 
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -100,6 +101,7 @@ public class Robot extends TimedRobot {
   I2C wire = new I2C(Port.kOnboard, 0x0);
   ColorSensorV3 colorSensor = new ColorSensorV3(I2C.Port.kOnboard);
   AHRS navx = new AHRS(SPI.Port.kOnboardCS0);
+  
 
 
   //Pneumatics
@@ -272,7 +274,7 @@ public class Robot extends TimedRobot {
     //was 0.05
     //was 0.00000027
     shooterMotor.config_kP(0,0.075,0);
-    shooterMotor.config_kI(0, 0.00000027, 0);
+    shooterMotor.config_kI(0, 0.0, 0);
     shooterMotor.config_kD(0, 0, 0);
     shooterMotor.config_kF(0, 0, 0);
     shooterMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
@@ -454,8 +456,8 @@ public class Robot extends TimedRobot {
         shooterSpeed=-14500;
         backspinSpeed=15000;
       }
-      if(tim.get()>2&&tim.get()<7){
-        if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<45000){
+      if(tim.get()>2&&tim.get()<5){
+        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))<55000){
           driveBase.set(-0.2, 0.20, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -470,8 +472,8 @@ public class Robot extends TimedRobot {
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
       }
       
-      if(tim.get()>7&&tim.get()<9){
-        if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
+      if(tim.get()>5&&tim.get()<7){
+        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))>20000){
           driveBase.set(0.2, -0.2, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -481,12 +483,12 @@ public class Robot extends TimedRobot {
       }
       
       
-      if(tim.get()>9&&tim.get()<10){
+      if(tim.get()>7&&tim.get()<8){
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000; 
       }
-      if(tim.get()>10&&tim.get()<12){
+      if(tim.get()>8&&tim.get()<12){
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000;
@@ -549,6 +551,8 @@ public class Robot extends TimedRobot {
         }
         
     }
+
+    SmartDashboard.putNumber("key", (Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))));
     //this need indexing to be added
     //remember encoder counts can go down and you have to add them onto the others!!!
      //the first line checks to see if we have to cross over 0
@@ -613,7 +617,10 @@ public class Robot extends TimedRobot {
     backSpintargetVelocity_UnitsPer100ms=0.0;
     pickupCounter=100;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    
+    if(hoodDown==false){
+      hoodSolenoid.toggle();
+      hoodDown=true;
+    }
     shooterSpeedTemp=15000;
 
     indexShootToggle=false;
@@ -702,19 +709,12 @@ public class Robot extends TimedRobot {
     //w * 0.7 limits rotational speed
 
 
-    if(fieldOriented)
-      if(x==0&&y==0){
-        driveBase.set(x, y*-1, w, gyroAngle);
-      }else{
-        driveBase.set(x, y*-1, w*.5, gyroAngle);
-      }
-    else{
-      if(x==0&&y==0){
-        driveBase.set(x,y*-1,w);
-      }else{
-      driveBase.set(x, y*-1, w*.5);
-      }
+    if(fieldOriented){
+        driveBase.set(x, y*-1, w*0.7, gyroAngle);
+      }else{      
+      driveBase.set(x, y*-1, w*.7);
     }
+    
 
 
     //this gives the triggers boolean outputs, its at 0.05 so it removes noise
@@ -749,7 +749,7 @@ public class Robot extends TimedRobot {
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==false){
+      if(indexSensorValue2==true){
         if(indexSensorValue1==false){
           if(indexTargetSwitch==false){
             indexTargetSwitch=true;
@@ -767,7 +767,7 @@ public class Robot extends TimedRobot {
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     
 
-    if(indexSensorValue2==true){
+    if(indexSensorValue2==false){
       if(indexSensor2Switch==true){
         indexAllow=false;
         indexSensor2Switch=false;
@@ -785,6 +785,7 @@ public class Robot extends TimedRobot {
     if(indexAllow==true){    
       if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
         indexMotor.set(ControlMode.Position, indexTargetCounts);
+        agitatorMotor.set(ControlMode.PercentOutput, -0.7);
         indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
       }else{
         indexTargetSwitch=false; 
@@ -797,35 +798,35 @@ public class Robot extends TimedRobot {
     }
     
 
-    if(intakeMotor.getSupplyCurrent()>7||agitatorMotor.getSupplyCurrent()>7){
-      if(agitatorCurrentSwitch==false){
-        agitatorCurrentSwitch=true;
-      }
-      else{
-        agitatorCurrentSwitch=false;
-      }
-    }
+    // if(intakeMotor.getSupplyCurrent()>7||agitatorMotor.getSupplyCurrent()>7){
+    //   if(agitatorCurrentSwitch==false){
+    //     agitatorCurrentSwitch=true;
+    //   }
+    //   else{
+    //     agitatorCurrentSwitch=false;
+    //   }
+    // }
 
-    if(agitatorCurrentSwitch){
-      if(agitatorTimerSwitch==false){
-        AgitatorTimer.start();
-      }
+    // if(agitatorCurrentSwitch){
+    //   if(agitatorTimerSwitch==false){
+    //     AgitatorTimer.start();
+    //   }
            
       
-    }else{
-      AgitatorTimer.stop();
-      AgitatorTimer.reset();
-    }
+    // }else{
+    //   AgitatorTimer.stop();
+    //   AgitatorTimer.reset();
+    // }
 
     
 
-    if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
-      agitatorMotor.set(ControlMode.PercentOutput, -0.75);
-      agitatorActiveSwitch=true;
+    // if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
+    //   agitatorMotor.set(ControlMode.PercentOutput, -0.75);
+    //   agitatorActiveSwitch=true;
       
-    }else{
-      agitatorActiveSwitch=false;
-    }
+    // }else{
+    //   agitatorActiveSwitch=false;
+    // }
 
     
 
@@ -842,27 +843,32 @@ public class Robot extends TimedRobot {
     //pickup motor code
     if(leftTrigger==true && letUpLeftTrigger) {
       intakeMotor.set(ControlMode.PercentOutput, 0.9);
+      agitatorMotor.set(ControlMode.PercentOutput, -0.7);
       pickupCounter=0;
       letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
+          agitatorMotor.set(ControlMode.PercentOutput, -0.7);
           pickupCounter++;
         }else{
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
+          agitatorMotor.set(ControlMode.PercentOutput, -0.7);
         }   
       }else if((controller.getRawButton(B))){
         intakeMotor.set(ControlMode.PercentOutput, -0.75);
         agitatorMotor.set(ControlMode.PercentOutput, -0.5);
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
+        agitatorMotor.set(ControlMode.PercentOutput, -0.15);
       }
-      if(leftTrigger==false &&pickupCounter<100){
+      if(leftTrigger==false &&pickupCounter<300){
         pickupCounter++;
       }
       if(pickupCounter<25){
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
+        agitatorMotor.set(ControlMode.PercentOutput, -0.7);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
       
