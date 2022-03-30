@@ -7,27 +7,19 @@
  
 package frc.robot;
 
-import com.revrobotics.ColorSensorV3;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
-
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-
-import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.I2C.Port;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
-import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -48,7 +40,7 @@ import com.kauailabs.navx.frc.AHRS;
 public class Robot extends TimedRobot {
   /**
    * This function is run when the robot is first started up and should be used
-   * for any initialization code.
+   * for any initialization code. 
    */
 
 
@@ -742,20 +734,21 @@ public class Robot extends TimedRobot {
     
     
     
+
    
 
     
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-      if(indexSensorValue2==true){
-        if(indexSensorValue1==false){
-          if(indexTargetSwitch==false){
-            indexTargetSwitch=true;
-            indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
-        }
-      }
-    } 
+    //   if(indexSensorValue2==true){
+    //     if(indexSensorValue1==false){
+    //       if(indexTargetSwitch==false){
+    //         indexTargetSwitch=true;
+    //         indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
+    //     }
+    //   }
+    // } 
     SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     SmartDashboard.putBoolean("indexSensorvalue1", indexSensorValue1);
     
@@ -766,35 +759,35 @@ public class Robot extends TimedRobot {
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     
 
-    if(indexSensorValue2==false){
-      if(indexSensor2Switch==true){
-        indexAllow=false;
-        indexSensor2Switch=false;
-      }
-    }else{
-      indexSensor2Switch=true;
-      indexAllow=true;
-    }
+    // if(indexSensorValue2==false){
+    //   if(indexSensor2Switch==true){
+    //     indexAllow=false;
+    //     indexSensor2Switch=false;
+    //   }
+    // }else{
+    //   indexSensor2Switch=true;
+    //   indexAllow=true;
+    // }
 
     SmartDashboard.putBoolean("indexAllow", indexAllow);
     //SmartDashboard.putBoolean("indexSensor2Switch", indexSensor2Switch);
 
 
     //FIXME index
-    if(indexAllow==true){    
-      if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
-        indexMotor.set(ControlMode.Position, indexTargetCounts);
-        agitatorMotor.set(ControlMode.PercentOutput, 0.7);
-        indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
-      }else{
-        indexTargetSwitch=false; 
-        indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-        indexTargetCounts=indexMotor.getSelectedSensorPosition();
-      }
-    }else{
-      indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-      indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    }
+    // if(indexAllow==true){    
+    //   if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
+    //     indexMotor.set(ControlMode.Position, indexTargetCounts);
+    //     agitatorMotor.set(ControlMode.PercentOutput, 0.7);
+    //     indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
+    //   }else{
+    //     indexTargetSwitch=false; 
+    //     indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+    //     indexTargetCounts=indexMotor.getSelectedSensorPosition();
+    //   }
+    // }else{
+    //   indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+    //   indexTargetCounts=indexMotor.getSelectedSensorPosition();
+    // }
     
 
     // if(intakeMotor.getSupplyCurrent()>7||agitatorMotor.getSupplyCurrent()>7){
@@ -971,29 +964,40 @@ public class Robot extends TimedRobot {
     //Shooter function
     if(hoodDown==false){
       if(controller.getRawButton(rightBumper) && Math.abs(shooterMotor.getSelectedSensorVelocity()) > 8300&&Math.abs(backspinMotor.getSelectedSensorVelocity())>300){
-        indexAllow=true;
-        //the if statment makes sure it only does this once until the next ball shoots
-        if(indexShootToggle==false){
-          indexShootToggle=true;
-          indexTargetCounts-=20000;
-        }else{
-          indexShootToggle=false;
-        }
+        // indexAllow=true;
+        // //the if statment makes sure it only does this once until the next ball shoots
+        // if(indexShootToggle==false){
+        //   indexShootToggle=true;
+        //   indexTargetCounts-=20000;
+        // }else{
+        //   indexShootToggle=false;
+        // }
         //1024 is the amount of counts it needs to mode, not tuned
       } 
     }
     if(hoodDown==true){
       if(controller.getRawButton(rightBumper) && Math.abs(shooterMotor.getSelectedSensorVelocity()) > 8600&&Math.abs(backspinMotor.getSelectedSensorVelocity())>300){
-      indexAllow=true;
-      //the if statment makes sure it only does this once until the next ball shoots
-      if(indexShootToggle==false){
-        indexShootToggle=true;
-        indexTargetCounts-=20000;
+      // indexAllow=true;
+      // //the if statment makes sure it only does this once until the next ball shoots
+      // if(indexShootToggle==false){
+      //   indexShootToggle=true;
+      //   indexTargetCounts-=20000;
+      // }else{
+      //   indexShootToggle=false;
+      // }
+      // //1024 is the amount of counts it needs to mode, not tuned
+      indexMotor.set(ControlMode.PercentOutput ,-0.75);
       }else{
-        indexShootToggle=false;
-      }
-      //1024 is the amount of counts it needs to mode, not tuned
-    }  
+        if(indexSensorValue2==true){
+          if(indexSensorValue1==false){
+            indexMotor.set(ControlMode.PercentOutput, -0.75);
+          }else{
+            indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+          }
+        }else{
+          indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+        }
+      }  
     }
      
     
