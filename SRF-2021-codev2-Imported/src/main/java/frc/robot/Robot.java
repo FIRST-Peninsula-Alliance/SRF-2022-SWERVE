@@ -133,12 +133,15 @@ public class Robot extends TimedRobot {
   //proximity switch is the value at which indexsensorvalue2 switched
   int ProximitySwitch=100;
   Boolean indexSensor2Switch=true;
+  //indexswitch makes the indexer run until the second sensor is switched
+  Boolean indexSwitch=false;
   Boolean indexAllow=true;
   int indexTicker;
   //Index Sensor Booleans
   Boolean indexSensorValue2=false;
   Boolean indexSensorValue1=false;  
   Boolean indexShootToggle=false;
+  //indexTargetSwitch is a one time switch each time the indexer goes into servo mode
   Boolean indexTargetSwitch=false;
   double indexTargetCounts;
   double indexCountsDifference;
@@ -244,11 +247,11 @@ public class Robot extends TimedRobot {
     indexMotor.setNeutralMode(NeutralMode.Brake);
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
-		indexMotor.configPeakOutputForward(0.8, 0);
-		indexMotor.configPeakOutputReverse(-0.8, 0);
+		indexMotor.configPeakOutputForward(0.9, 0);
+		indexMotor.configPeakOutputReverse(-0.9, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-    indexMotor.config_kP(0, 0.4, 0);
+    indexMotor.config_kP(0, 0.54, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
 
@@ -336,31 +339,29 @@ public class Robot extends TimedRobot {
      zeroYaw = navx.getAngle() % 360;
      if(zeroYaw < 0){
        zeroYaw += 360;
-
+     }
       autoFrontLeft=frontLeft.getSelectedSensorPosition();
       autoFrontRight=frontRight.getSelectedSensorPosition();
       autoBackLeft=rearLeft.getSelectedSensorPosition();
       autoBackRight=rearRight.getSelectedSensorPosition();
       
       
-     }
-
-     gyroStartAngle=navx.getAngle();
-
     }
     
    
 
    @Override
    public void autonomousPeriodic() {
-    SmartDashboard.putNumber("gyro angle", (navx.getAngle()));
-    SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
-    SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
-    SmartDashboard.putNumber("time", tim.get());
+    
      
     gyroTargetAngle=gyroTargetAngle%180;    
     gyroRange=10;
     gyroAngle=navx.getAngle();
+
+    SmartDashboard.putNumber("gyro angle", (navx.getAngle()));
+    SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
+    SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
+    SmartDashboard.putNumber("time", tim.get());
     
     //index code
   //   indexSensorValue1 = indexSensor1.get();
@@ -973,14 +974,15 @@ public class Robot extends TimedRobot {
         //   indexShootToggle=false;
         // }
         indexMotor.set(ControlMode.PercentOutput ,-0.9);
+        agitatorMotor.set(ControlMode.PercentOutput, 0.7);
+        indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
         //1024 is the amount of counts it needs to mode, not tuned
       }else{
         if(indexSensorValue2==true){
           if(indexSensorValue1==false){
-            indexTargetSwitch=true;
+            indexSwitch=true;
           }else{
             indexMotor.set(ControlMode.Position, indexTargetCounts);
-            
             //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
           }
         }else{
@@ -989,8 +991,9 @@ public class Robot extends TimedRobot {
         }
 
 
-        if(indexTargetSwitch==true){
+        if(indexSwitch==true){
           indexMotor.set(ControlMode.PercentOutput, -0.9);
+          indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
         }
         
       }  
@@ -1008,32 +1011,35 @@ public class Robot extends TimedRobot {
       // }
       // //1024 is the amount of counts it needs to mode, not tuned
       indexMotor.set(ControlMode.PercentOutput ,-0.9);
+      agitatorMotor.set(ControlMode.PercentOutput, 0.7);
+      indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
       }else{
         if(indexSensorValue2==true){
           if(indexSensorValue1==false){
-            indexTargetSwitch=true;
+            indexSwitch=true;
           }else{
-            indexMotor.set(ControlMode.PercentOutput, 0);
+            indexMotor.set(ControlMode.Position, indexTargetCounts);
             //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
           }
         }else{
-          indexMotor.set(ControlMode.PercentOutput, 0);
+          indexMotor.set(ControlMode.Position, indexTargetCounts);
           //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
         }
 
 
-        if(indexTargetSwitch==true){
+        if(indexSwitch==true){
           indexMotor.set(ControlMode.PercentOutput, -0.9);
+          indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
         }
         
       }  
     }
      
     if(indexSensorValue2==false){
-          indexTargetSwitch=false;
+          indexSwitch=false;
         }    
 
-    indexTargetCounts=indexMotor.getSelectedSensorPosition();
+    
 
     //shooter warmup
     if(rightTrigger&&letUpRightTrigger){
@@ -1053,7 +1059,7 @@ public class Robot extends TimedRobot {
     }
 
     
-
+    SmartDashboard.putNumber("indexTarget", indexTargetCounts);
 
     
     //FIXME timer for climber
