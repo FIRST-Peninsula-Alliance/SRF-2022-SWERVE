@@ -990,12 +990,20 @@ public class Robot extends TimedRobot {
       }else{
         if(indexSensorValue2==true){
           if(indexSensorValue1==false){
+            indexTargetSwitch=true;
             indexMotor.set(ControlMode.PercentOutput, -0.75);
           }else{
             indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
           }
         }else{
           indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+        }
+
+        if(indexTargetSwitch=true){
+          indexMotor.set(ControlMode.PercentOutput, -0.75);
+        }
+        if(indexSensorValue2==true){
+          indexTargetSwitch=false;
         }
       }  
     }
