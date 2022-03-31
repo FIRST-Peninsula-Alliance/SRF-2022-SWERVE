@@ -358,7 +358,7 @@ public class Robot extends TimedRobot {
     gyroRange=10;
     gyroAngle=navx.getAngle();
 
-    SmartDashboard.putNumber("gyro angle", (navx.getAngle()));
+    SmartDashboard.putNumber("gyro angle", gyroAngle);
     SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
     SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
     SmartDashboard.putNumber("time", tim.get());
@@ -449,7 +449,7 @@ public class Robot extends TimedRobot {
         backspinSpeed=15000;
       }
       if(tim.get()>2&&tim.get()<5){
-        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))<55000){
+        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))<70000){
           driveBase.set(-0.2, 0.20, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -465,7 +465,7 @@ public class Robot extends TimedRobot {
       }
       
       if(tim.get()>5&&tim.get()<7){
-        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))>20000){
+        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))>5000){
           driveBase.set(0.2, -0.2, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -628,8 +628,8 @@ public class Robot extends TimedRobot {
     indexSensorValue1 = indexSensor1.get();
     indexSensorValue2 = indexSensor2.get();
     
-    
-    SmartDashboard.putNumber("Gyro", navx.getAngle());
+    gyroAngle=navx.getAngle();
+    SmartDashboard.putNumber("Gyro", gyroAngle);
     // SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
@@ -861,6 +861,8 @@ public class Robot extends TimedRobot {
       }
       if(pickupCounter<25){
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
+      }
+      if(pickupCounter<60){
         agitatorMotor.set(ControlMode.PercentOutput, 0.8);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
