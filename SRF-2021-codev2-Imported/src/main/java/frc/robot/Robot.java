@@ -1047,7 +1047,7 @@ public class Robot extends TimedRobot {
         }    
 
     
-        SmartDashboard.putNumber("backspinTicker", backspintic)
+        SmartDashboard.putNumber("backspinTicker", backspinTicker);
     //shooter warmup
     if(rightTrigger&&letUpRightTrigger){
       if(hoodDown==false){
@@ -1064,15 +1064,21 @@ public class Robot extends TimedRobot {
       if(backspinTicker<100){
         backspinTicker++;
       }
-      if(backspinTicker>50){
+      
+    }
+
+    if(!rightTrigger){
+      if(backspinTicker<100){
+        backspinTicker++;
+      }
+    }else{
+      backspinTicker=0;
+    }
+  
+if(backspinTicker>99){
         shooterSpeed=0.0;
       backspinSpeed=0.0;
       }
-    }
-
-    
-  
-
     
     //FIXME timer for climber
      if(match.get() >= 105||climberOverride==true){
@@ -1174,7 +1180,7 @@ public class Robot extends TimedRobot {
     if(match.get() > 105) {
       //arnold.disable();
     }
-    
+    //b
     
   
     //SmartDashboard commandsf
