@@ -7,19 +7,27 @@
  
 package frc.robot;
 
+import com.revrobotics.ColorSensorV3;
 
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cameraserver.CameraServer;
+
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -27,7 +35,6 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.kauailabs.navx.frc.AHRS;
-
 
 
 /**
@@ -40,7 +47,7 @@ import com.kauailabs.navx.frc.AHRS;
 public class Robot extends TimedRobot {
   /**
    * This function is run when the robot is first started up and should be used
-   * for any initialization code. 
+   * for any initialization code.
    */
 
 
@@ -90,9 +97,7 @@ public class Robot extends TimedRobot {
   
   // Block pixyBlock;
   // PixyCam pixy = new PixyCam();
-  
-  private final AHRS navx = new AHRS(SPI.Port.kMXP);
-  
+  private final AHRS navx = new AHRS(SPI.Port.kMXP, (byte) 200);
 
 
   //Pneumatics
@@ -111,7 +116,6 @@ public class Robot extends TimedRobot {
   boolean flapDown = false;
   boolean climberPinsout = false;
   boolean bigclimberdown = false;
-  Boolean climberOverride=false;
 
   //counter to make pickup stay on for longer
   int pickupCounter;
@@ -134,22 +138,18 @@ public class Robot extends TimedRobot {
   //proximity switch is the value at which indexsensorvalue2 switched
   int ProximitySwitch=100;
   Boolean indexSensor2Switch=true;
-  //indexswitch makes the indexer run until the second sensor is switched
-  Boolean indexSwitch=false;
   Boolean indexAllow=true;
   int indexTicker;
   //Index Sensor Booleans
   Boolean indexSensorValue2=false;
   Boolean indexSensorValue1=false;  
   Boolean indexShootToggle=false;
-  //indexTargetSwitch is a one time switch each time the indexer goes into servo mode
   Boolean indexTargetSwitch=false;
   double indexTargetCounts;
   double indexCountsDifference;
   
-  boolean backspinSwitch=false;
-  double backspinTicker=100;
 
+  
   boolean agitatorCurrentSwitch=false;
   boolean agitatorTimerSwitch=false;
   boolean agitatorActiveSwitch=false;
@@ -173,7 +173,6 @@ public class Robot extends TimedRobot {
   double shooterSpeed, backspinSpeed;
   Boolean slowModeToggle;
   Boolean slowMode = false;
-  Boolean superSlowMode=false;
   final double offSetFL = 1.783, offSetFR = 1.854, offSetRL = 2.567, offSetRR = 1.361;
 
 
@@ -250,11 +249,11 @@ public class Robot extends TimedRobot {
     indexMotor.setNeutralMode(NeutralMode.Brake);
     indexMotor.configNominalOutputForward(0, 0);
 		indexMotor.configNominalOutputReverse(0, 0);
-		indexMotor.configPeakOutputForward(0.9, 0);
-		indexMotor.configPeakOutputReverse(-0.9, 0);
+		indexMotor.configPeakOutputForward(0.8, 0);
+		indexMotor.configPeakOutputReverse(-0.8, 0);
     indexMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
     //was 0.35
-    indexMotor.config_kP(0, 0.54, 0);
+    indexMotor.config_kP(0, 0.4, 0);
     indexMotor.config_kI(0, 0, 0);
     indexMotor.config_kD(0, 0, 0);
 
@@ -271,7 +270,7 @@ public class Robot extends TimedRobot {
     //was 0.05
     //was 0.00000027
     shooterMotor.config_kP(0,0.075,0);
-    shooterMotor.config_kI(0, 0.0, 0);
+    shooterMotor.config_kI(0, 0.00000027, 0);
     shooterMotor.config_kD(0, 0, 0);
     shooterMotor.config_kF(0, 0, 0);
     shooterMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 35, 40, 0.5),0);
@@ -325,6 +324,8 @@ public class Robot extends TimedRobot {
      }
      hoodSolenoid.toggle();
      hoodDown=true;
+     pickupSolenoid.toggle();
+     pickupDown=true;
      if(AutoSelected.equals("Auto1")){
       AutonomousChosen=1;
       SmartDashboard.putNumber("auto", 1);
@@ -342,29 +343,31 @@ public class Robot extends TimedRobot {
      zeroYaw = navx.getAngle() % 360;
      if(zeroYaw < 0){
        zeroYaw += 360;
-     }
+
       autoFrontLeft=frontLeft.getSelectedSensorPosition();
       autoFrontRight=frontRight.getSelectedSensorPosition();
       autoBackLeft=rearLeft.getSelectedSensorPosition();
       autoBackRight=rearRight.getSelectedSensorPosition();
       
       
+     }
+
+     gyroStartAngle=navx.getAngle();
+
     }
     
    
 
    @Override
    public void autonomousPeriodic() {
-    
+    SmartDashboard.putNumber("gyro angle", (navx.getAngle()));
+    SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
+    SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
+    SmartDashboard.putNumber("time", tim.get());
      
     gyroTargetAngle=gyroTargetAngle%180;    
     gyroRange=10;
     gyroAngle=navx.getAngle();
-
-    SmartDashboard.putNumber("gyro angle", gyroAngle);
-    SmartDashboard.putNumber("gyro start angle", gyroStartAngle);
-    SmartDashboard.putNumber("gyro target Angle", gyroTargetAngle);
-    SmartDashboard.putNumber("time", tim.get());
     
     //index code
   //   indexSensorValue1 = indexSensor1.get();
@@ -393,7 +396,7 @@ public class Robot extends TimedRobot {
   // }
 
 
-    agitatorMotor.set(ControlMode.PercentOutput, 0.3);
+    //agitatorMotor.set(ControlMode.PercentOutput, 0.3);
 
     //shooter code
     if(shooterSpeed == 0.0){
@@ -451,8 +454,8 @@ public class Robot extends TimedRobot {
         shooterSpeed=-14500;
         backspinSpeed=15000;
       }
-      if(tim.get()>2&&tim.get()<5){
-        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))<70000){
+      if(tim.get()>2&&tim.get()<7){
+        if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<45000){
           driveBase.set(-0.2, 0.20, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -467,8 +470,8 @@ public class Robot extends TimedRobot {
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
       }
       
-      if(tim.get()>5&&tim.get()<7){
-        if(Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))>5000){
+      if(tim.get()>7&&tim.get()<9){
+        if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
           driveBase.set(0.2, -0.2, 0);
         }else{
           driveBase.set(0, 0, 0);
@@ -478,12 +481,12 @@ public class Robot extends TimedRobot {
       }
       
       
-      if(tim.get()>7&&tim.get()<8){
+      if(tim.get()>9&&tim.get()<10){
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000; 
       }
-      if(tim.get()>8&&tim.get()<12){
+      if(tim.get()>10&&tim.get()<12){
         driveBase.set(0, 0, 0);
         shooterSpeed=-14500;
         backspinSpeed=15000;
@@ -497,10 +500,10 @@ public class Robot extends TimedRobot {
           pickupSolenoid.toggle();
           pickupDown=false;
         }
-        if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
+        // if(hoodDown==true){
+        //   hoodSolenoid.toggle();
+        //   hoodDown=false;
+        // }
         indexMotor.set(ControlMode.PercentOutput, -0.9);
         intakeMotor.set(ControlMode.PercentOutput, 0);
       }
@@ -524,38 +527,28 @@ public class Robot extends TimedRobot {
           timStart = true;
         }
         if(tim.get()<1){
-          gyroTargetAngle=gyroStartAngle-135;
-          if(gyroAngle>(gyroTargetAngle-gyroRange)&gyroAngle<(gyroTargetAngle+gyroRange)){
-            driveBase.set(0, 0, 0);
-           }else{
-            driveBase.set(0,0,0.15);
-          }     
-        }
-        // if(tim.get()<1){
         
-        //   shooterSpeed=-14500;
-        //   backspinSpeed=15000;
-        // }
-        // if(tim.get()>1&&tim.get()<2){
-        //   if(hoodDown==true){
-        //     hoodSolenoid.toggle();
-        //     hoodDown=false;
-        //   }
-        //   indexMotor.set(ControlMode.PercentOutput, -0.275);
-        //   shooterSpeed=-14500;
-        //   backspinSpeed=15000;
-        // }
-        // if(tim.get()>2&&tim.get()<3){
-        //   if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
-        //     driveBase.set(0.1, -0.1, 0);
-        //   }else{
-        //     driveBase.set(0, 0, 0);
-        //   }
-        // }
+          shooterSpeed=-14500;
+          backspinSpeed=15000;
+        }
+        if(tim.get()>1&&tim.get()<2){
+          if(hoodDown==true){
+            hoodSolenoid.toggle();
+            hoodDown=false;
+          }
+          indexMotor.set(ControlMode.PercentOutput, -0.275);
+          shooterSpeed=-14500;
+          backspinSpeed=15000;
+        }
+        if(tim.get()>2&&tim.get()<3){
+          if(Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)<90000){
+            driveBase.set(0.1, -0.1, 0);
+          }else{
+            driveBase.set(0, 0, 0);
+          }
+        }
         
     }
-
-    SmartDashboard.putNumber("key", (Math.abs((Math.abs(frontLeft.getSelectedSensorPosition())-Math.abs(autoFrontLeft)))));
     //this need indexing to be added
     //remember encoder counts can go down and you have to add them onto the others!!!
      //the first line checks to see if we have to cross over 0
@@ -578,36 +571,54 @@ public class Robot extends TimedRobot {
       //FIXME AUTO1
     if(AutonomousChosen==1){
       
-     
+  
+
+      if(tim.get()>1){
+        intakeMotor.set(ControlMode.PercentOutput, 0.9);
+        shooterSpeed=-14500;
+        backspinSpeed=15000;
+        agitatorMotor.set(ControlMode.PercentOutput, 0.3);
+      }
+
+      if(pickupDown==true){
+        pickupSolenoid.toggle();
+        pickupDown=false;
+      }
+
+      if((tim.get()%3)<1){
+        indexMotor.set(ControlMode.PercentOutput, -0.8);
+      }else{
+        indexMotor.set(ControlMode.PercentOutput, 0);
+      }
     //timer based system
     
-      if(tim.get()<1){
+      // if(tim.get()<1){
         
-        shooterSpeed=-14500;
-        backspinSpeed=15000;
-      }
-      if(tim.get()>1&&tim.get()<2){
-        if(hoodDown==false){
-          hoodSolenoid.toggle();
-          hoodDown=true;
-        }
-        indexMotor.set(ControlMode.PercentOutput, -0.8);
-        shooterSpeed=-14500;
-        backspinSpeed=15000;
-      }
-      if(tim.get()>2&&tim.get()<5){
-        driveBase.set(0, 0.1, 0);
-        shooterSpeed=0.0;
-        backspinSpeed=0.0;
+      //   shooterSpeed=-14500;
+      //   backspinSpeed=15000;
+      // }
+      // if(tim.get()>1&&tim.get()<2){
+      //   if(hoodDown==false){
+      //     hoodSolenoid.toggle();
+      //     hoodDown=true;
+      //   }
+      //   indexMotor.set(ControlMode.PercentOutput, -0.8);
+      //   shooterSpeed=-14500;
+      //   backspinSpeed=15000;
+      // }
+      // if(tim.get()>2&&tim.get()<5){
+      //   driveBase.set(0, 0.1, 0);
+      //   shooterSpeed=0.0;
+      //   backspinSpeed=0.0;
         
-      }
-      if(tim.get()>5&&tim.get()<5.6){
-        driveBase.set(0, 0, 0);
-         if(hoodDown==true){
-          hoodSolenoid.toggle();
-          hoodDown=false;
-        }
-      }
+      // }
+      // if(tim.get()>5&&tim.get()<5.6){
+      //   driveBase.set(0, 0, 0);
+      //    if(hoodDown==true){
+      //     hoodSolenoid.toggle();
+      //     hoodDown=false;
+      //   }
+      // }
   }
   }
 
@@ -620,10 +631,7 @@ public class Robot extends TimedRobot {
     backSpintargetVelocity_UnitsPer100ms=0.0;
     pickupCounter=100;
     indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    if(hoodDown==false){
-      hoodSolenoid.toggle();
-      hoodDown=true;
-    }
+    
     shooterSpeedTemp=15000;
 
     indexShootToggle=false;
@@ -639,8 +647,8 @@ public class Robot extends TimedRobot {
     indexSensorValue1 = indexSensor1.get();
     indexSensorValue2 = indexSensor2.get();
     
-    gyroAngle=navx.getAngle();
-    SmartDashboard.putNumber("Gyro", gyroAngle);
+    
+    SmartDashboard.putNumber("Gyro", navx.getAngle());
     // SmartDashboard.putNumber("frontleftrot", frontLeftRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("FRtrot",  frontRightRot.getSelectedSensorPosition());
     // SmartDashboard.putNumber("BLrot", rearLeftRot.getSelectedSensorPosition());
@@ -709,21 +717,22 @@ public class Robot extends TimedRobot {
       y *= .25;
     }
 
-    if(superSlowMode){
-      x*=0.135;
-      y*=0.135;
-      
-    }
-
     //w * 0.7 limits rotational speed
 
 
-    if(fieldOriented){
-        driveBase.set(x, y*-1, w*0.7, gyroAngle);
-      }else{      
-      driveBase.set(x, y*-1, w*.7);
+    if(fieldOriented)
+      if(x==0&&y==0){
+        driveBase.set(x, y*-1, w, gyroAngle);
+      }else{
+        driveBase.set(x, y*-1, w*.5, gyroAngle);
+      }
+    else{
+      if(x==0&&y==0){
+        driveBase.set(x,y*-1,w);
+      }else{
+      driveBase.set(x, y*-1, w*.5);
+      }
     }
-    
 
 
     //this gives the triggers boolean outputs, its at 0.05 so it removes noise
@@ -752,21 +761,20 @@ public class Robot extends TimedRobot {
     
     
     
-
    
 
     
 
     //index sensors
       //switch indexsensorvalue2 to true once you have sensor
-    //   if(indexSensorValue2==true){
-    //     if(indexSensorValue1==false){
-    //       if(indexTargetSwitch==false){
-    //         indexTargetSwitch=true;
-    //         indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
-    //     }
-    //   }
-    // } 
+      if(indexSensorValue2==false){
+        if(indexSensorValue1==false){
+          if(indexTargetSwitch==false){
+            indexTargetSwitch=true;
+            indexTargetCounts=indexMotor.getSelectedSensorPosition()-200000;
+        }
+      }
+    } 
     SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     SmartDashboard.putBoolean("indexSensorvalue1", indexSensorValue1);
     
@@ -777,70 +785,69 @@ public class Robot extends TimedRobot {
     //SmartDashboard.putBoolean("indexTargetSwitch", indexTargetSwitch);
     
 
-    // if(indexSensorValue2==false){
-    //   if(indexSensor2Switch==true){
-    //     indexAllow=false;
-    //     indexSensor2Switch=false;
-    //   }
-    // }else{
-    //   indexSensor2Switch=true;
-    //   indexAllow=true;
-    // }
+    if(indexSensorValue2==true){
+      if(indexSensor2Switch==true){
+        indexAllow=false;
+        indexSensor2Switch=false;
+      }
+    }else{
+      indexSensor2Switch=true;
+      indexAllow=true;
+    }
 
     SmartDashboard.putBoolean("indexAllow", indexAllow);
     //SmartDashboard.putBoolean("indexSensor2Switch", indexSensor2Switch);
 
 
     //FIXME index
-    // if(indexAllow==true){    
-    //   if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
-    //     indexMotor.set(ControlMode.Position, indexTargetCounts);
-    //     agitatorMotor.set(ControlMode.PercentOutput, 0.7);
-    //     indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
-    //   }else{
-    //     indexTargetSwitch=false; 
-    //     indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-    //     indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    //   }
-    // }else{
-    //   indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-    //   indexTargetCounts=indexMotor.getSelectedSensorPosition();
-    // }
+    if(indexAllow==true){    
+      if(Math.abs(Math.abs(indexTargetCounts)-Math.abs(indexMotor.getSelectedSensorPosition()))>300){
+        indexMotor.set(ControlMode.Position, indexTargetCounts);
+        indexCountsDifference=Math.abs(indexMotor.getSelectedSensorPosition())-Math.abs(indexTargetCounts);
+      }else{
+        indexTargetSwitch=false; 
+        indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+        indexTargetCounts=indexMotor.getSelectedSensorPosition();
+      }
+    }else{
+      indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+      indexTargetCounts=indexMotor.getSelectedSensorPosition();
+    }
     
 
-    // if(intakeMotor.getSupplyCurrent()>7||agitatorMotor.getSupplyCurrent()>7){
-    //   if(agitatorCurrentSwitch==false){
-    //     agitatorCurrentSwitch=true;
-    //   }
-    //   else{
-    //     agitatorCurrentSwitch=false;
-    //   }
-    // }
+    if(intakeMotor.getSupplyCurrent()>7||agitatorMotor.getSupplyCurrent()>7){
+      if(agitatorCurrentSwitch==false){
+        agitatorCurrentSwitch=true;
+      }
+      else{
+        agitatorCurrentSwitch=false;
+      }
+    }
 
-    // if(agitatorCurrentSwitch){
-    //   if(agitatorTimerSwitch==false){
-    //     AgitatorTimer.start();
-    //   }
+    if(agitatorCurrentSwitch){
+      if(agitatorTimerSwitch==false){
+        AgitatorTimer.start();
+      }
            
       
-    // }else{
-    //   AgitatorTimer.stop();
-    //   AgitatorTimer.reset();
-    // }
+    }else{
+      AgitatorTimer.stop();
+      AgitatorTimer.reset();
+    }
 
     
 
-    // if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
-    //   agitatorMotor.set(ControlMode.PercentOutput, -0.75);
-    //   agitatorActiveSwitch=true;
+    if(AgitatorTimer.get()>0.01&&AgitatorTimer.get()<3){
+      agitatorMotor.set(ControlMode.PercentOutput, -0.75);
+      agitatorActiveSwitch=true;
       
-    // }else{
-    //   agitatorActiveSwitch=false;
-    // }
+    }else{
+      agitatorActiveSwitch=false;
+    }
 
     
 
-
+  
     //SmartDashboard.putNumber("intakeCurrent", intakeMotor.getSupplyCurrent());
     //SmartDashboard.putNumber("AgitatorCurrent", agitatorMotor.getSupplyCurrent());
     //SmartDashboard.putNumber("index velocity", indexMotor.getSelectedSensorVelocity());
@@ -853,34 +860,27 @@ public class Robot extends TimedRobot {
     //pickup motor code
     if(leftTrigger==true && letUpLeftTrigger) {
       intakeMotor.set(ControlMode.PercentOutput, 0.9);
-      agitatorMotor.set(ControlMode.PercentOutput, 0.8);
       pickupCounter=0;
       letUpLeftTrigger = false;
       } else if(leftTrigger==false && !letUpLeftTrigger) {
         letUpLeftTrigger = true;
         if(pickupCounter<25){
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
-          agitatorMotor.set(ControlMode.PercentOutput, 0.8);
           pickupCounter++;
         }else{
           intakeMotor.set(ControlMode.PercentOutput, 0.9);
-          agitatorMotor.set(ControlMode.PercentOutput, 0.8);
         }   
       }else if((controller.getRawButton(B))){
         intakeMotor.set(ControlMode.PercentOutput, -0.75);
         agitatorMotor.set(ControlMode.PercentOutput, -0.5);
       }else{
         intakeMotor.set(ControlMode.PercentOutput, 0);
-        agitatorMotor.set(ControlMode.PercentOutput, 0.15);
       }
-      if(leftTrigger==false &&pickupCounter<300){
+      if(leftTrigger==false &&pickupCounter<100){
         pickupCounter++;
       }
       if(pickupCounter<25){
         intakeMotor.set(ControlMode.PercentOutput, 0.9);
-      }
-      if(pickupCounter<60){
-        agitatorMotor.set(ControlMode.PercentOutput, 0.8);
       }
       //SmartDashboard.putNumber("pickupcounter", pickupCounter);
       
@@ -932,7 +932,21 @@ public class Robot extends TimedRobot {
       //   letUpX=true;
       // }
     
-    
+    //Flap
+    if(controller.getRawButtonPressed(Y) && letUpY)
+    {
+      
+      if(flapDown == false) {
+        flapSolenoid.toggle();
+        flapDown = true;
+      } else {
+        flapSolenoid.toggle();
+        flapDown = false;
+      }
+      letUpY = false;
+    } else if(!controller.getRawButton(Y)) {
+      letUpY = true;
+    }
 
     //field orient code
     if(controller.getRawButton(leftOptionButton) && letUpLeftOptions) {
@@ -970,84 +984,33 @@ public class Robot extends TimedRobot {
     //Shooter function
     if(hoodDown==false){
       if(controller.getRawButton(rightBumper) && Math.abs(shooterMotor.getSelectedSensorVelocity()) > 8300&&Math.abs(backspinMotor.getSelectedSensorVelocity())>300){
-        // indexAllow=true;
-        // //the if statment makes sure it only does this once until the next ball shoots
-        // if(indexShootToggle==false){
-        //   indexShootToggle=true;
-        //   indexTargetCounts-=20000;
-        // }else{
-        //   indexShootToggle=false;
-        // }
-        
-        indexMotor.set(ControlMode.PercentOutput ,-0.9);
-        agitatorMotor.set(ControlMode.PercentOutput, 0.7);
-        indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
-        //1024 is the amount of counts it needs to mode, not tuned
-      }else{
-        if(indexSensorValue2==true){
-          if(indexSensorValue1==false){
-            indexSwitch=true;
-          }else{
-            indexMotor.set(ControlMode.Position, indexTargetCounts);
-            //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-          }
+        indexAllow=true;
+        //the if statment makes sure it only does this once until the next ball shoots
+        if(indexShootToggle==false){
+          indexShootToggle=true;
+          indexTargetCounts-=20000;
         }else{
-          indexMotor.set(ControlMode.Position, indexTargetCounts);
-          //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
+          indexShootToggle=false;
         }
-
-
-        if(indexSwitch==true){
-          indexMotor.set(ControlMode.PercentOutput, -0.9);
-          indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
-        }
-        
-      }  
-       
+        //1024 is the amount of counts it needs to mode, not tuned
+      } 
     }
     if(hoodDown==true){
       if(controller.getRawButton(rightBumper) && Math.abs(shooterMotor.getSelectedSensorVelocity()) > 8600&&Math.abs(backspinMotor.getSelectedSensorVelocity())>300){
-      // indexAllow=true;
-      // //the if statment makes sure it only does this once until the next ball shoots
-      // if(indexShootToggle==false){
-      //   indexShootToggle=true;
-      //   indexTargetCounts-=20000;
-      // }else{
-      //   indexShootToggle=false;
-      // }
-      // //1024 is the amount of counts it needs to mode, not tuned
-      
-      indexMotor.set(ControlMode.PercentOutput ,-0.9);
-      agitatorMotor.set(ControlMode.PercentOutput, 0.7);
-      indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
+      indexAllow=true;
+      //the if statment makes sure it only does this once until the next ball shoots
+      if(indexShootToggle==false){
+        indexShootToggle=true;
+        indexTargetCounts-=20000;
       }else{
-        if(indexSensorValue2==true){
-          if(indexSensorValue1==false){
-            indexSwitch=true;
-          }else{
-            indexMotor.set(ControlMode.Position, indexTargetCounts);
-            //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-          }
-        }else{
-          indexMotor.set(ControlMode.Position, indexTargetCounts);
-          //indexMotor.set(ControlMode.Position, indexMotor.getSelectedSensorPosition());
-        }
-
-
-        if(indexSwitch==true){
-          indexMotor.set(ControlMode.PercentOutput, -0.9);
-          indexTargetCounts=indexMotor.getSelectedSensorPosition()-40000;
-        }
-        
-      }  
+        indexShootToggle=false;
+      }
+      //1024 is the amount of counts it needs to mode, not tuned
+    }  
     }
      
-    if(indexSensorValue2==false){
-          indexSwitch=false;
-        }    
-
     
-        SmartDashboard.putNumber("backspinTicker", backspinTicker);
+
     //shooter warmup
     if(rightTrigger&&letUpRightTrigger){
       if(hoodDown==false){
@@ -1057,31 +1020,20 @@ public class Robot extends TimedRobot {
         shooterSpeed=-14500;
         backspinSpeed=15000;
       }
-      backspinTicker=0;
+      
       letUpRightTrigger=false;
     }else if((!rightTrigger)&&!letUpRightTrigger){
       letUpRightTrigger=true;
-      if(backspinTicker<100){
-        backspinTicker++;
-      }
-      
+      shooterSpeed=0.0;
+      backspinSpeed=0.0;
     }
 
-    if(!rightTrigger){
-      if(backspinTicker<100){
-        backspinTicker++;
-      }
-    }else{
-      backspinTicker=0;
-    }
-  
-if(backspinTicker>99){
-        shooterSpeed=0.0;
-      backspinSpeed=0.0;
-      }
+    
+
+
     
     //FIXME timer for climber
-     if(match.get() >= 105||climberOverride==true){
+    //  if(match.get() >= 105){
       
       //climber up
       if(controller.getPOV()==0&&letUpPOV0) {
@@ -1116,26 +1068,10 @@ if(backspinTicker>99){
       } else if(controller.getPOV()!=180&& !letUpPOV180) {
         letUpPOV180 = true;
       }
-  }
+  //}
   
-  // if(controller.getRawButton(X)&&letUpX&&(controller.getRawButton(Y)&&letUpY)){
-  //     letUpX=false;
-  //     letUpY=false;
-  //     climberOverride=true;
-  // }else{
-  //   letUpX=true;
-  //   letUpY=true;
-  // }
   
-  if(controller.getRawButton(X)){
-    
-    superSlowMode=true;
-  }else{
-    
-    superSlowMode=false;
-  }
-
-  //hello this is gavin working on code
+  
 
     //example
     // if(controller.getRawButton(leftBumper) && letUpBack) {
@@ -1165,22 +1101,18 @@ if(backspinTicker>99){
     SmartDashboard.putNumber("velocity", shooterMotor.getSelectedSensorVelocity());
     SmartDashboard.putNumber("backspinVelocity", backspinMotor.getSelectedSensorVelocity());
 
+    if(backspinSpeed==0){
+      backspinMotor.set(ControlMode.PercentOutput,0.0);
+      
+    }else{
+      backspinMotor.set(ControlMode.Velocity, backspinSpeed);
+    }
     
-      if(backspinSpeed==0&&backspinTicker>50){
-        backspinMotor.set(ControlMode.PercentOutput,0.0);
-        backspinSwitch=false;
-      }else{
-        backspinMotor.set(ControlMode.Velocity, backspinSpeed);
-        backspinSwitch=true;
-      }
-    
-    
-
 
     if(match.get() > 105) {
       //arnold.disable();
     }
-    //b
+    
     
   
     //SmartDashboard commandsf
